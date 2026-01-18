@@ -8,7 +8,7 @@
     <!-- Import Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Metal+Mania&family=Raleway:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Metal+Mania&family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,9 +17,11 @@
     <style>
         :root {
             --primary-glow: #8a0b0b; /* Merah Darah */
-            --secondary-glow: #4a004a; /* Ungu Mistis */
+            --secondary-glow: #2d002d; /* Ungu Gelap */
+            --gold-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
             --obsidian: #050505;
-            --dark-panel: rgba(10, 5, 10, 0.85);
+            --glass-bg: rgba(20, 10, 20, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
         body, html {
@@ -29,7 +31,9 @@
             height: 100%;
             background-color: var(--obsidian);
             color: #e0e0e0;
-            overflow-x: hidden; /* Prevent horizontal scroll */
+            /* PERBAIKAN 1: Matikan scroll body, pindahkan ke page-view */
+            overflow: hidden; 
+            cursor: default;
         }
 
         /* --- BACKGROUND & EFFECTS --- */
@@ -43,6 +47,18 @@
             background: radial-gradient(circle at center, #1a051a 0%, #000000 90%);
         }
 
+        #spotlight {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+            background: radial-gradient(600px circle at var(--x, 50%) var(--y, 50%), rgba(138, 11, 11, 0.15), transparent 40%);
+            transition: opacity 0.5s;
+        }
+
         .vignette {
             position: fixed;
             top: 0;
@@ -50,126 +66,211 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.98) 100%);
-            z-index: -1;
+            background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.95) 100%);
+            z-index: 0;
         }
 
-        /* --- FONTS --- */
+        /* --- FONTS & TEXTURE --- */
         .font-gothic { font-family: 'Cinzel Decorative', cursive; }
         .font-metal { font-family: 'Metal Mania', cursive; }
         .font-sans-serif { font-family: 'Raleway', sans-serif; }
 
-        /* --- INTRO SCREEN TRANSITIONS --- */
-        #intro-screen {
-            position: fixed;
+        .text-gold {
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(191, 149, 63, 0.3);
+        }
+
+        /* --- PAGE SLIDE ANIMATIONS (PERBAIKAN SCROLL) --- */
+        /* Container for pages */
+        #pages-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%; /* Full height */
+            overflow: hidden;
+        }
+
+        /* Individual Page Styles */
+        .page-view {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 100%; /* Full height viewport */
+            /* PERBAIKAN 2: Scrollbar ada di sini sekarang */
+            overflow-y: auto; 
+            overflow-x: hidden;
+            padding-top: 80px; /* Space for navbar */
+            transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.8s ease;
+            will-change: transform, opacity;
+            
+            /* Hide scrollbar for cleaner look but keep functionality */
+            scrollbar-width: thin;
+            scrollbar-color: #8a0b0b #1a051a;
+        }
+
+        /* Custom Scrollbar Webkit */
+        .page-view::-webkit-scrollbar {
+            width: 8px;
+        }
+        .page-view::-webkit-scrollbar-track {
+            background: #1a051a; 
+        }
+        .page-view::-webkit-scrollbar-thumb {
+            background-color: #8a0b0b; 
+            border-radius: 4px;
+        }
+
+        /* States for Main Page (Home/Info) */
+        .view-main-active {
+            transform: translateX(0);
+            opacity: 1;
+            z-index: 10;
+            pointer-events: auto;
+        }
+        .view-main-hidden {
+            transform: translateX(-100%); /* Geser ke kiri */
+            opacity: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* States for Store Page */
+        .view-store-active {
+            transform: translateX(0);
+            opacity: 1;
+            z-index: 10;
+            pointer-events: auto;
+        }
+        .view-store-hidden {
+            transform: translateX(100%); /* Geser ke kanan */
+            opacity: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+
+        /* --- INTRO SCREEN --- */
+        #intro-screen {
+            position: fixed;
+            inset: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            z-index: 50;
-            transition: opacity 1.5s ease-in, transform 1.5s cubic-bezier(0.7, 0, 0.84, 0);
-            transform-origin: center center;
+            z-index: 100;
+            transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out;
+            background: #000;
         }
-
-        /* Kelas untuk memicu animasi masuk ke abyss */
         .zoom-into-abyss {
             opacity: 0;
-            transform: scale(20); /* Zoom in ekstrem */
+            transform: scale(15);
             pointer-events: none;
         }
 
-        /* --- MAIN WEBSITE (HIDDEN INITIALLY) --- */
+        /* --- MAIN WEBSITE --- */
         #main-website {
             display: none;
             opacity: 0;
             transition: opacity 2s ease-out;
-            min-height: 100vh;
-            padding-top: 80px; /* Space for navbar */
+            height: 100%; /* Ensure full height */
+        }
+        .show-website { opacity: 1 !important; }
+
+        /* --- UI COMPONENTS --- */
+        
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s;
+        }
+        .glass-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(138, 11, 11, 0.5);
+            box-shadow: 0 15px 40px rgba(138, 11, 11, 0.2);
         }
 
-        .show-website {
-            opacity: 1 !important;
-        }
-
-        /* --- TYPOGRAPHY EFFECTS --- */
-        .title-glow {
-            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow);
-            animation: pulse-glow 3s infinite alternate;
-        }
-        @keyframes pulse-glow {
-            0% { text-shadow: 0 0 5px var(--primary-glow), 0 0 15px var(--primary-glow); opacity: 0.9; }
-            100% { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px red; opacity: 1; }
-        }
-
-        /* --- BUTTONS --- */
         .cursed-btn {
             position: relative;
-            background: rgba(0,0,0,0.6);
+            background: transparent;
             color: #d1d1d1;
             font-family: 'Cinzel Decorative', serif;
             letter-spacing: 2px;
-            border: 1px solid #555;
+            border: 1px solid rgba(255,255,255,0.2);
             padding: 1rem 3rem;
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             text-transform: uppercase;
             cursor: pointer;
-            transition: all 0.3s ease;
-            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
-            white-space: nowrap; /* Mencegah teks turun saat animasi width */
+            overflow: hidden;
+            transition: all 0.4s ease;
+            z-index: 1;
         }
-        .cursed-btn:hover {
-            color: #fff;
-            border-color: #8a0b0b;
-            box-shadow: 0 0 15px rgba(138, 11, 11, 0.6);
-            background: rgba(20, 0, 0, 0.6);
-        }
-
-        /* --- NAVBAR --- */
-        nav {
-            background: rgba(5, 5, 5, 0.9);
-            border-bottom: 1px solid #331010;
-            backdrop-filter: blur(5px);
-        }
-        .nav-link {
-            position: relative;
-            color: #aaa;
-            transition: color 0.3s;
-        }
-        .nav-link:hover { color: #fff; text-shadow: 0 0 8px var(--primary-glow); }
-        .nav-link::after {
+        .cursed-btn::before {
             content: '';
             position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -4px;
-            left: 0;
-            background-color: #8a0b0b;
-            transition: width 0.3s;
+            top: 0; left: 0; width: 0%; height: 100%;
+            background: #8a0b0b;
+            z-index: -1;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .nav-link:hover::after { width: 100%; }
+        .cursed-btn:hover::before { width: 100%; }
+        .cursed-btn:hover { border-color: #8a0b0b; color: #fff; box-shadow: 0 0 20px rgba(138,11,11,0.6); }
 
-        /* --- CARDS & SECTIONS --- */
-        .info-card {
-            background: var(--dark-panel);
-            border: 1px solid #333;
-            border-left: 3px solid #8a0b0b;
-            transition: transform 0.3s, border-color 0.3s;
+        .store-btn {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #444;
+            color: #ccc;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
-        .info-card:hover {
-            transform: translateY(-5px);
-            border-color: #8a0b0b;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .store-btn:hover { border-color: #ffd700; color: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+
+        nav {
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.3s;
+        }
+        nav:hover { background: rgba(5, 5, 5, 0.95); }
+
+        .rank-premium {
+            background: linear-gradient(160deg, rgba(30,10,10,0.8), rgba(10,5,5,0.9));
+            border: 1px solid #8a0b0b;
+            position: relative;
+        }
+        .rank-premium::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            z-index: -1;
+            background: linear-gradient(45deg, #8a0b0b, transparent, #ffd700, transparent, #8a0b0b);
+            background-size: 400%;
+            animation: border-animate 10s linear infinite;
+            border-radius: inherit;
+            opacity: 0.5;
+        }
+        @keyframes border-animate {
+            0% { background-position: 0 0; }
+            50% { background-position: 100% 0; }
+            100% { background-position: 0 0; }
         }
 
-        /* Toast Notification */
         #toast {
             visibility: hidden;
-            min-width: 250px;
-            background-color: #1a051a;
+            min-width: 280px;
+            background: rgba(10, 5, 5, 0.95);
+            border-left: 4px solid #8a0b0b;
             color: #fff;
             text-align: center;
             padding: 16px;
@@ -177,234 +278,383 @@
             z-index: 100;
             left: 50%;
             bottom: 30px;
-            transform: translateX(-50%);
-            border: 1px solid #8a0b0b;
-            font-family: 'Cinzel Decorative', cursive;
+            transform: translateX(-50%) translateY(20px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            font-family: 'Raleway', sans-serif;
             opacity: 0;
-            transition: opacity 0.3s, bottom 0.3s;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 4px;
         }
-        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        #toast.show { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        /* Helper for Logo Animation */
-        .logo-float { animation: float 6s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .logo-float { animation: float 6s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(138, 11, 11, 0.3)); }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(2deg); } }
+
+        /* Scroll Reveal (Hanya untuk halaman Main) */
+        .reveal { opacity: 0; transform: translateY(50px); transition: all 1s cubic-bezier(0.5, 0, 0, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .delay-100 { transition-delay: 0.1s; }
+        .delay-200 { transition-delay: 0.2s; }
+        .delay-300 { transition-delay: 0.3s; }
+
     </style>
 </head>
-<body class="text-white">
+<body class="antialiased">
 
-    <!-- Canvas Background (Persisten di belakang) -->
     <canvas id="canvas-container"></canvas>
-    
-    <!-- Vignette Overlay -->
+    <div id="spotlight"></div>
     <div class="vignette"></div>
 
-    <!-- ================= INTRO SCREEN (Landing Awal) ================= -->
+    <!-- ================= INTRO SCREEN ================= -->
     <div id="intro-screen">
         <div class="relative z-10 text-center px-4 max-w-4xl flex flex-col items-center">
             
-            <!-- Logo -->
-            <div class="mb-6 w-32 md:w-48 lg:w-56 logo-float opacity-90">
-                <img src="logoCO.png" alt="Curse Odyssey" class="w-full h-auto object-contain drop-shadow-[0_0_15px_rgba(138,11,11,0.5)]" onerror="this.style.display='none'">
+            <div class="mb-8 w-40 md:w-56 lg:w-64 logo-float relative">
+                <div class="absolute inset-0 bg-red-900 blur-[60px] opacity-40 rounded-full animate-pulse"></div>
+                <img src="logoCO.png" alt="Curse Odyssey" class="relative z-10 w-full h-auto object-contain" onerror="this.style.display='none'">
             </div>
 
-            <div class="inline-block border border-red-900 bg-black/50 px-3 py-1 text-xs text-red-400 font-sans-serif mb-4 tracking-widest uppercase rounded">
+            <div class="inline-block border border-red-900/50 bg-black/40 backdrop-blur-sm px-4 py-1 text-xs md:text-sm text-red-400 font-sans-serif mb-6 tracking-[0.3em] uppercase rounded shadow-[0_0_15px_rgba(138,11,11,0.2)]">
                 Indonesia • Hardcore RP
             </div>
 
-            <h1 class="font-metal text-5xl md:text-7xl lg:text-8xl mb-4 tracking-widest title-glow select-none">
+            <h1 class="font-metal text-6xl md:text-8xl lg:text-9xl mb-6 tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-gray-100 to-gray-600 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] select-none">
                 CURSE ODYSSEY
             </h1>
 
-            <p class="font-gothic text-gray-400 text-lg mb-12 tracking-wide opacity-80 max-w-xl">
-                Only the strongest survive the purge. <br>Are you ready to sacrifice everything?
+            <p class="font-gothic text-gray-400 text-lg md:text-xl mb-12 tracking-wide opacity-80 max-w-xl leading-relaxed">
+                Only the <span class="text-red-500">strongest</span> survive the purge. <br>
+                The Abyss is calling your name.
             </p>
 
-            <!-- Tombol Pemicu Zoom -->
             <button class="cursed-btn group" onclick="enterTheAbyss()">
-                <span class="relative z-10 group-hover:text-red-100 font-bold">Enter the Abyss</span>
-                <div class="text-[10px] text-gray-500 mt-1 font-sans group-hover:text-red-300 transition-colors">Click to Enter Website</div>
+                <span class="relative z-10 font-bold tracking-widest group-hover:tracking-[0.2em] transition-all duration-300">Enter the Abyss</span>
             </button>
         </div>
     </div>
 
 
-    <!-- ================= MAIN WEBSITE (Muncul setelah Zoom) ================= -->
+    <!-- ================= MAIN WEBSITE (CONTAINER) ================= -->
     <div id="main-website">
         
-        <!-- Navbar -->
-        <nav class="fixed top-0 w-full z-40 px-6 py-4 flex justify-between items-center">
-            <div class="text-xl font-metal text-red-700 tracking-wider">Curse Odyssey</div>
-            <div class="hidden md:flex gap-8 font-gothic text-sm uppercase tracking-wide">
-                <a href="#home" class="nav-link">Home</a>
-                <a href="#information" class="nav-link">Information</a>
-                <a href="#rules" class="nav-link">Rules</a>
-                <a href="https://discord.gg/example" target="_blank" class="nav-link text-indigo-400">Discord</a>
+        <!-- Navbar Fixed -->
+        <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center transition-all duration-300" id="navbar">
+            <div class="text-xl font-metal text-red-600 tracking-wider hidden sm:flex items-center gap-2 drop-shadow-[0_0_5px_rgba(255,0,0,0.5)]">
+                <span class="text-2xl">☠</span> Curse Odyssey
             </div>
-            <!-- Mobile Menu Icon (Placeholder) -->
-            <div class="md:hidden text-2xl cursor-pointer">≡</div>
+            <div class="flex gap-6 md:gap-10 font-gothic text-xs md:text-sm uppercase tracking-wide mx-auto sm:mx-0">
+                <!-- Nav Link dengan Fungsi Switch Page -->
+                <a href="#" onclick="showMainPage('home')" class="text-gray-400 hover:text-white transition-colors relative group">
+                    Home <span class="absolute -bottom-1 left-0 w-0 h-[1px] bg-red-600 transition-all group-hover:w-full"></span>
+                </a>
+                <a href="#" onclick="showMainPage('information')" class="text-gray-400 hover:text-white transition-colors relative group">
+                    Info <span class="absolute -bottom-1 left-0 w-0 h-[1px] bg-red-600 transition-all group-hover:w-full"></span>
+                </a>
+                
+                <!-- BUTTON STORE (Special Trigger) -->
+                <a href="#" onclick="showStorePage()" class="text-yellow-500 font-bold hover:text-yellow-200 transition-colors drop-shadow-sm flex items-center gap-1">
+                    Store <span class="text-[10px] bg-red-900 text-white px-1 rounded animate-pulse">NEW</span>
+                </a>
+                
+                <a href="https://discord.gg/example" target="_blank" class="text-indigo-400 hover:text-indigo-300 transition-colors">
+                    Discord
+                </a>
+            </div>
         </nav>
 
-        <!-- Section: Home -->
-        <section id="home" class="min-h-screen flex items-center justify-center px-4 relative pt-20">
-            <div class="max-w-5xl w-full grid md:grid-cols-2 gap-12 items-center">
-                <!-- Left Content -->
-                <div class="text-left space-y-6">
-                    <h2 class="font-metal text-5xl text-white leading-tight">
-                        The <span class="text-red-800">Cursed Lands</span> Await Your Arrival
-                    </h2>
-                    <p class="font-sans-serif text-gray-400 leading-relaxed">
-                        Bergabunglah dalam petualangan Roleplay Hardcore Minecraft Indonesia yang paling imersif. 
-                        Bangun ekonomi, bentuk aliansi, dan bertahan hidup dari kutukan kuno yang menghantui setiap malam.
-                        Ingat, kematian di sini bersifat permanen untuk karaktermu.
-                    </p>
+        <!-- WRAPPER UNTUK HALAMAN -->
+        <div id="pages-wrapper">
+            
+            <!-- ====== PAGE 1: MAIN VIEW (Home & Info) ====== -->
+            <div id="view-main" class="page-view view-main-active">
+                
+                <!-- Section: Home -->
+                <section id="home" class="min-h-screen flex items-center justify-center px-4 relative">
+                    <div class="max-w-6xl w-full grid md:grid-cols-2 gap-16 items-center">
+                        <div class="text-left space-y-8 reveal active">
+                            <h2 class="font-metal text-5xl md:text-7xl text-white leading-[1.1]">
+                                The <span class="text-gold block mt-2 text-6xl md:text-8xl">Cursed Lands</span>
+                            </h2>
+                            <p class="font-sans-serif text-gray-400 leading-7 text-lg border-l-2 border-red-900 pl-4">
+                                Bergabunglah dalam petualangan Roleplay Hardcore Minecraft Indonesia yang paling imersif. 
+                                <br><span class="text-red-500 font-bold mt-2 block">WARNING: DEATH IS PERMANENT</span>
+                            </p>
+                            
+                            <div class="flex flex-col sm:flex-row gap-4 pt-4 transition-all duration-500">
+                                <button id="btn-copy-ip" onclick="rejectIPCopy()" class="cursed-btn py-3 px-8 text-sm flex items-center justify-center gap-3">
+                                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#0f0]"></span>
+                                    <span>Copy IP</span>
+                                </button>
+                                <a id="btn-discord" href="https://discord.gg/example" target="_blank" class="px-8 py-3 border border-indigo-900/50 bg-indigo-950/20 text-indigo-300 hover:bg-indigo-900/40 hover:text-white transition-all uppercase tracking-wider font-gothic text-sm flex items-center justify-center">
+                                    Join Discord
+                                </a>
+                            </div>
+                        </div>
+                        <div class="relative hidden md:block perspective-1000">
+                            <div class="glass-card p-8 transform rotate-y-12 rotate-x-6 hover:rotate-0 transition-all duration-700 reveal delay-200">
+                                <h3 class="font-gothic text-2xl text-red-600 mb-6 border-b border-gray-700 pb-2 flex justify-between items-center">
+                                    Latest Chronicles
+                                </h3>
+                                <ul class="space-y-6 font-sans-serif text-sm text-gray-300">
+                                    <li class="flex justify-between items-center">
+                                        <span>Season 1: The Awakening</span>
+                                        <span class="text-xs text-gray-500 border border-gray-800 px-2 py-1 rounded">2d ago</span>
+                                    </li>
+                                    <li class="flex justify-between items-center text-yellow-500">
+                                        <span>Store Grand Opening</span>
+                                        <span class="text-xs text-yellow-600 border border-yellow-900 px-2 py-1 rounded">Today</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Information -->
+                <section id="information" class="py-32 px-4 bg-gradient-to-b from-transparent via-black to-transparent">
+                    <div class="max-w-6xl mx-auto">
+                        <div class="text-center mb-20 reveal">
+                            <h2 class="font-metal text-4xl md:text-5xl text-gray-200 mb-4">Features</h2>
+                            <div class="w-16 h-1 bg-red-900 mx-auto rounded-full"></div>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-8">
+                            <div class="glass-card p-10 rounded-xl relative overflow-hidden group reveal delay-100">
+                                <div class="text-5xl mb-6">💀</div>
+                                <h3 class="font-gothic text-2xl text-white mb-3 group-hover:text-red-500 transition-colors">Hardcore RP</h3>
+                                <p class="font-sans-serif text-sm text-gray-400">Setiap nyawa adalah taruhan. Kematian karakter berarti akhir dari cerita.</p>
+                            </div>
+                            <div class="glass-card p-10 rounded-xl relative overflow-hidden group reveal delay-200">
+                                <div class="text-5xl mb-6">💰</div>
+                                <h3 class="font-gothic text-2xl text-white mb-3 group-hover:text-yellow-500 transition-colors">Economy</h3>
+                                <p class="font-sans-serif text-sm text-gray-400">Pasar bebas yang kejam. Monopoli sumber daya atau jadilah pedagang pasar gelap.</p>
+                            </div>
+                            <div class="glass-card p-10 rounded-xl relative overflow-hidden group reveal delay-300">
+                                <div class="text-5xl mb-6">⚔️</div>
+                                <h3 class="font-gothic text-2xl text-white mb-3 group-hover:text-purple-500 transition-colors">Artifacts</h3>
+                                <p class="font-sans-serif text-sm text-gray-400">Senjata dengan jiwa iblis. Memberikan kekuatan namun menggerogoti kewarasan.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <footer class="bg-black py-12 border-t border-gray-900 text-center font-sans-serif">
+                    <p class="text-gray-400 text-sm">&copy; 2026 Curse Odyssey Indonesia.</p>
+                </footer>
+            </div>
+
+
+            <!-- ====== PAGE 2: STORE VIEW (Slide in from Right) ====== -->
+            <div id="view-store" class="page-view view-store-hidden">
+                <section class="min-h-screen px-4 pb-20 relative">
+                    <!-- Background Decoration -->
+                    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 z-0"></div>
                     
-                    <div class="flex flex-col sm:flex-row gap-4 mt-8 transition-all duration-500" id="button-container">
-                        <!-- Tombol Copy IP -->
-                        <button id="btn-copy-ip" onclick="rejectIPCopy()" class="cursed-btn text-sm py-3 px-6 flex items-center justify-center gap-2 group border-red-900 bg-red-950/20">
-                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span id="ip-text">Copy Server IP</span>
-                        </button>
+                    <div class="max-w-6xl mx-auto relative z-10 pt-10">
                         
-                        <!-- Tombol Discord -->
-                        <a id="btn-discord" href="https://discord.gg/example" target="_blank" class="cursed-btn text-sm py-3 px-6 text-center border-indigo-900 hover:border-indigo-500">
-                            Join Discord
-                        </a>
-                    </div>
-                    <div class="text-xs text-gray-600 font-mono mt-2">Server Status: <span class="text-green-500">ONLINE</span> • 120/500 Players</div>
-                </div>
+                        <!-- Back Button -->
+                        <button onclick="showMainPage()" class="mb-8 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group">
+                            <span class="group-hover:-translate-x-1 transition-transform">←</span> Back to Home
+                        </button>
 
-                <!-- Right Content (Visual) -->
-                <div class="relative hidden md:block">
-                     <!-- Stylized Box for visual balance since no image provided aside from logo -->
-                     <div class="border border-gray-800 bg-black/40 p-8 transform rotate-2 hover:rotate-0 transition-transform duration-500">
-                        <h3 class="font-gothic text-2xl text-red-700 mb-4 border-b border-gray-800 pb-2">Latest News</h3>
-                        <ul class="space-y-4 font-sans-serif text-sm text-gray-300">
-                            <li class="flex justify-between">
-                                <span>Season 1: The Awakening</span>
-                                <span class="text-xs text-gray-500">2 Days Ago</span>
-                            </li>
-                            <li class="flex justify-between">
-                                <span>New Economy System Live</span>
-                                <span class="text-xs text-gray-500">1 Week Ago</span>
-                            </li>
-                            <li class="flex justify-between">
-                                <span>Hardcore Event: Blood Moon</span>
-                                <span class="text-xs text-gray-500">Coming Soon</span>
-                            </li>
-                        </ul>
-                     </div>
-                </div>
+                        <div class="text-center mb-16">
+                            <span class="text-yellow-600 font-gothic tracking-widest text-sm uppercase mb-2 block">Official Server Store</span>
+                            <h2 class="font-metal text-5xl md:text-6xl text-gold mb-4 drop-shadow-lg">Treasury & Ranks</h2>
+                        </div>
+
+                        <!-- RANK SHOP -->
+                        <div class="grid lg:grid-cols-2 gap-10 mb-20 max-w-5xl mx-auto items-center">
+                            
+                            <!-- VIP Rank -->
+                            <div class="glass-card p-8 rounded-2xl flex flex-col h-full border-t-4 border-gray-600">
+                                <div class="flex justify-between items-start mb-6">
+                                    <div>
+                                        <h4 class="font-metal text-4xl text-gray-200">VIP</h4>
+                                        <p class="text-xs text-gray-500 mt-1 uppercase tracking-wider">Starter Privilege</p>
+                                    </div>
+                                    <span class="bg-gray-800/50 border border-gray-600 text-white px-4 py-2 text-sm font-bold rounded">15K IDR</span>
+                                </div>
+                                <ul class="font-sans-serif text-gray-400 space-y-4 mb-8 flex-grow text-sm">
+                                    <li class="flex items-center gap-3"><span class="text-green-500">✓</span> <span>Akses spoiler senjata</span></li>
+                                    <li class="flex items-center gap-3"><span class="text-green-500">✓</span> <span>Bonus 5.000 Money/minggu</span></li>
+                                </ul>
+                                <button onclick="buyItem('VIP Rank')" class="store-btn w-full mt-auto bg-gray-900 hover:bg-gray-800">Purchase Ticket</button>
+                            </div>
+
+                            <!-- PREMIUM Rank -->
+                            <div class="glass-card rank-premium p-10 rounded-2xl flex flex-col transform scale-105 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                                <div class="absolute top-0 right-0 bg-gradient-to-l from-red-800 to-transparent text-white text-xs font-bold px-4 py-1 rounded-bl-xl">POPULAR</div>
+                                <div class="flex justify-between items-start mb-6">
+                                    <div>
+                                        <h4 class="font-metal text-5xl text-gold drop-shadow-md">PREMIUM</h4>
+                                        <p class="text-xs text-yellow-600 mt-1 uppercase tracking-wider">Ultimate Authority</p>
+                                    </div>
+                                    <span class="bg-gradient-to-r from-red-900 to-red-800 text-white px-4 py-2 text-lg font-bold rounded shadow-lg border border-red-600">25K IDR</span>
+                                </div>
+                                <ul class="font-sans-serif text-gray-300 space-y-4 mb-10 flex-grow text-sm">
+                                    <li class="flex items-center gap-3"><span class="text-yellow-500 text-lg">★</span> <span class="text-white font-bold">Semua Keuntungan VIP</span></li>
+                                    <li class="flex items-center gap-3"><span class="text-green-500">✓</span> <span>Request Referensi Senjata Custom</span></li>
+                                    <li class="flex items-center gap-3"><span class="text-green-500">✓</span> <span>Bonus 10.000 Money/minggu</span></li>
+                                </ul>
+                                <button onclick="buyItem('Premium Rank')" class="store-btn w-full mt-auto border-yellow-600/50 bg-red-950/30 text-yellow-100 hover:bg-red-900 hover:border-yellow-500">Purchase Ticket</button>
+                            </div>
+                        </div>
+
+                        <!-- MONEY SHOP -->
+                        <div class="bg-black/40 backdrop-blur-md border border-gray-800 rounded-3xl p-8">
+                            <h3 class="font-gothic text-2xl text-gray-300 mb-8 border-l-4 border-yellow-600 pl-4">Currency Exchange</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                                <div class="group text-center">
+                                    <div class="w-16 h-16 mx-auto mb-3 bg-gray-800 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-all border border-gray-700">💰</div>
+                                    <div class="font-bold text-gray-200">5k</div>
+                                    <div class="text-xs text-gray-500 mb-2">5.000 IDR</div>
+                                    <button onclick="buyItem('5k Money')" class="store-btn text-xs w-full py-2">Buy</button>
+                                </div>
+                                <div class="group text-center">
+                                    <div class="w-16 h-16 mx-auto mb-3 bg-gray-800 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-all border border-gray-700">💰</div>
+                                    <div class="font-bold text-gray-200">10k</div>
+                                    <div class="text-xs text-gray-500 mb-2">10.000 IDR</div>
+                                    <button onclick="buyItem('10k Money')" class="store-btn text-xs w-full py-2">Buy</button>
+                                </div>
+                                <div class="group text-center">
+                                    <div class="w-16 h-16 mx-auto mb-3 bg-gray-800 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-all border border-gray-700 border-yellow-900 shadow-[0_0_10px_rgba(255,215,0,0.1)]">🌕</div>
+                                    <div class="font-bold text-yellow-100">25k</div>
+                                    <div class="text-xs text-gray-500 mb-2">25.000 IDR</div>
+                                    <button onclick="buyItem('25k Money')" class="store-btn text-xs w-full py-2">Buy</button>
+                                </div>
+                                <div class="group text-center">
+                                    <div class="w-16 h-16 mx-auto mb-3 bg-gray-800 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-all border border-gray-700 border-yellow-700 shadow-[0_0_15px_rgba(255,215,0,0.2)]">🏆</div>
+                                    <div class="font-bold text-yellow-300">50k</div>
+                                    <div class="text-xs text-gray-500 mb-2">50.000 IDR</div>
+                                    <button onclick="buyItem('50k Money')" class="store-btn text-xs w-full py-2">Buy</button>
+                                </div>
+                                <div class="group text-center">
+                                    <div class="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-yellow-900 to-black rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-all border border-yellow-600 shadow-[0_0_20px_rgba(255,215,0,0.3)]">💎</div>
+                                    <div class="font-bold text-gold">100k</div>
+                                    <div class="text-xs text-gray-500 mb-2">100.000 IDR</div>
+                                    <button onclick="buyItem('100k Money')" class="store-btn text-xs w-full py-2 border-yellow-600 bg-yellow-900/20">Buy</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-12 text-center text-xs text-gray-500">
+                            <span class="text-red-500 font-bold">DISCLAIMER:</span> NO REFUND. Create a ticket in Discord for support.
+                        </div>
+                    </div>
+                </section>
             </div>
-        </section>
 
-        <!-- Section: Information -->
-        <section id="information" class="py-24 px-4 bg-black/30">
-            <div class="max-w-6xl mx-auto">
-                <div class="text-center mb-16">
-                    <h2 class="font-metal text-4xl text-red-800 mb-4">Server Features</h2>
-                    <div class="w-24 h-1 bg-red-900 mx-auto"></div>
-                </div>
-
-                <div class="grid md:grid-cols-3 gap-8">
-                    <!-- Feature 1 -->
-                    <div class="info-card p-8 rounded">
-                        <div class="text-4xl mb-4">💀</div>
-                        <h3 class="font-gothic text-xl text-white mb-2">Hardcore Roleplay</h3>
-                        <p class="font-sans-serif text-sm text-gray-400">
-                            Setiap nyawa berharga. Jika karaktermu mati, cerita mereka berakhir. Buatlah setiap keputusan dengan bijak.
-                        </p>
-                    </div>
-                    <!-- Feature 2 -->
-                    <div class="info-card p-8 rounded">
-                        <div class="text-4xl mb-4">💰</div>
-                        <h3 class="font-gothic text-xl text-white mb-2">Player Economy</h3>
-                        <p class="font-sans-serif text-sm text-gray-400">
-                            Sistem ekonomi yang sepenuhnya digerakkan oleh pemain. Berdagang, buka toko, atau jadilah raja pasar gelap.
-                        </p>
-                    </div>
-                    <!-- Feature 3 -->
-                    <div class="info-card p-8 rounded">
-                        <div class="text-4xl mb-4">⚔️</div>
-                        <h3 class="font-gothic text-xl text-white mb-2">Custom Artifacts</h3>
-                        <p class="font-sans-serif text-sm text-gray-400">
-                            Temukan item legendaris yang tersebar di dunia. Senjata terkutuk dengan kekuatan besar namun berisiko tinggi.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer class="bg-black py-8 border-t border-gray-900 text-center font-sans-serif text-xs text-gray-600">
-            <p>&copy; 2026 Curse Odyssey Indonesia. All Rights Reserved.</p>
-            <p class="mt-2">Not affiliated with Mojang AB.</p>
-        </footer>
+        </div> <!-- End Pages Wrapper -->
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast">IP Copied: play.curseodyssey.id</div>
+    <div id="toast">Notification Message</div>
 
     <!-- JavaScript -->
     <script>
-        // === 1. TRANSITION LOGIC (Enter the Abyss) ===
+        // === PAGE SWITCHING LOGIC ===
+        function showStorePage(e) {
+            if(e) e.preventDefault();
+            
+            // Geser Main View ke kiri, Store View masuk dari kanan
+            document.getElementById('view-main').classList.remove('view-main-active');
+            document.getElementById('view-main').classList.add('view-main-hidden');
+            
+            document.getElementById('view-store').classList.remove('view-store-hidden');
+            document.getElementById('view-store').classList.add('view-store-active');
+
+            // Scroll Store ke atas saat dibuka (penting karena scroll ada di dalam page-view)
+            document.getElementById('view-store').scrollTop = 0;
+        }
+
+        function showMainPage(sectionId) {
+            // Geser Store View balik ke kanan, Main View masuk dari kiri
+            document.getElementById('view-store').classList.remove('view-store-active');
+            document.getElementById('view-store').classList.add('view-store-hidden');
+            
+            document.getElementById('view-main').classList.remove('view-main-hidden');
+            document.getElementById('view-main').classList.add('view-main-active');
+
+            // Optional: Scroll ke section tertentu jika ada parameter
+            if (sectionId) {
+                setTimeout(() => {
+                    const el = document.getElementById(sectionId);
+                    if(el) {
+                        // Perlu scroll di dalam #view-main, bukan window
+                        el.scrollIntoView({behavior: 'smooth'});
+                    } else {
+                        // Jika id 'home' atau scroll atas
+                         document.getElementById('view-main').scrollTop = 0;
+                    }
+                }, 800); // Tunggu animasi slide selesai
+            }
+        }
+
+        // === SCROLL REVEAL OBSERVER ===
+        // Perlu memantau scroll di dalam .page-view (view-main), bukan window
+        const mainView = document.getElementById('view-main');
+        const revealElements = document.querySelectorAll('.reveal');
+        
+        // Setup Observer dengan root null (viewport) atau mainView
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { 
+            root: mainView, // Pantau di dalam main view
+            threshold: 0.15 
+        });
+        
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // === INTRO LOGIC ===
         function enterTheAbyss() {
             const introScreen = document.getElementById('intro-screen');
             const mainWebsite = document.getElementById('main-website');
             
-            // Trigger zoom class
             introScreen.classList.add('zoom-into-abyss');
-
-            // Wait for animation (1.5s match CSS)
             setTimeout(() => {
-                introScreen.style.display = 'none'; // Remove intro from flow
-                
-                // Show Main Website
+                introScreen.style.display = 'none';
                 mainWebsite.style.display = 'block';
-                // Trigger reflow agar transition opacity jalan
                 void mainWebsite.offsetWidth; 
                 mainWebsite.classList.add('show-website');
                 
-            }, 1200); // Sedikit lebih cepat dari durasi animasi CSS agar transisi mulus
+                // Re-init particles for correct size
+                resize();
+            }, 1000); 
         }
 
-        // === 2. REJECT IP COPY LOGIC (New Requirement) ===
+        // === UI INTERACTIONS ===
         function rejectIPCopy() {
             const btnCopy = document.getElementById("btn-copy-ip");
             const btnDiscord = document.getElementById("btn-discord");
-            const toast = document.getElementById("toast");
-
-            // 1. Tampilkan Pesan No No
-            toast.innerText = "No no, kamu harus melakukan whitelist di join discord";
-            toast.className = "show";
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
-
-            // 2. Hilangkan Tombol Copy IP dengan animasi
-            btnCopy.style.transition = "all 0.5s ease";
+            showToast("⚠️ No no, kamu harus whitelist di Discord dulu!");
+            btnCopy.style.transform = "scale(0) rotate(10deg)";
             btnCopy.style.opacity = "0";
-            btnCopy.style.transform = "scale(0.8)";
-            
-            // Setelah sedikit delay, set properti layout agar Discord bergeser
-            setTimeout(() => {
-                btnCopy.style.maxWidth = "0";
-                btnCopy.style.padding = "0";
-                btnCopy.style.margin = "0";
-                btnCopy.style.border = "0";
-                btnCopy.style.overflow = "hidden";
-            }, 200);
-            
-            // Fokuskan user ke tombol Discord (Visual cue)
-            setTimeout(() => {
-                btnDiscord.classList.add('animate-pulse');
-                btnDiscord.style.boxShadow = "0 0 25px rgba(75, 0, 130, 0.8)";
-            }, 500);
+            setTimeout(() => { btnCopy.style.display = 'none'; }, 500);
+            setTimeout(() => { btnDiscord.classList.add('ring-4', 'ring-indigo-500', 'ring-opacity-50', 'animate-pulse'); }, 600);
         }
 
+        function buyItem(itemName) {
+            showToast(`💎 Buka Ticket di Discord untuk membeli: ${itemName}`);
+        }
 
-        // === 3. CANVAS PARTICLES (Background) ===
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
+        }
+
+        // === CANVAS & EFFECTS ===
+        const spotlight = document.getElementById('spotlight');
+        document.addEventListener('mousemove', (e) => {
+            spotlight.style.setProperty('--x', e.clientX + 'px');
+            spotlight.style.setProperty('--y', e.clientY + 'px');
+        });
+
         const canvas = document.getElementById('canvas-container');
         const ctx = canvas.getContext('2d');
-        let width, height;
-        let particles = [];
+        let width, height, particles = [];
 
         function resize() {
             width = window.innerWidth;
@@ -421,55 +671,37 @@
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
                 this.size = Math.random() * 2 + 0.5;
-                this.speedY = Math.random() * 0.5 + 0.2;
-                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = Math.random() * 0.4 + 0.1;
+                this.speedX = (Math.random() - 0.5) * 0.8;
                 this.opacity = Math.random() * 0.5 + 0.1;
-                this.fadeSpeed = Math.random() * 0.002 + 0.001;
-                this.fadeDirection = Math.random() > 0.5 ? 1 : -1;
+                this.color = Math.random() > 0.9 ? `rgba(100, 20, 20, ${this.opacity})` : `rgba(150, 150, 160, ${this.opacity})`;
             }
             update() {
                 this.y += this.speedY;
                 this.x += this.speedX;
-                this.opacity += this.fadeSpeed * this.fadeDirection;
-                if (this.opacity >= 0.6 || this.opacity <= 0.1) this.fadeDirection *= -1;
                 if (this.y > height) { this.y = -10; this.x = Math.random() * width; }
+                if (this.x > width) this.x = 0;
+                if (this.x < 0) this.x = width;
             }
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(180, 180, 190, ${this.opacity})`;
+                ctx.fillStyle = this.color;
                 ctx.fill();
             }
         }
 
         function initParticles() {
-            const count = width < 768 ? 50 : 120;
+            particles = [];
+            const count = width < 768 ? 60 : 150;
             for (let i = 0; i < count; i++) particles.push(new Particle());
         }
+        
         function animate() {
             ctx.clearRect(0, 0, width, height);
             particles.forEach(p => { p.update(); p.draw(); });
             requestAnimationFrame(animate);
         }
-
-        // Mouse interaction
-        let mouse = { x: null, y: null, radius: 100 };
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.x;
-            mouse.y = e.y;
-            particles.forEach(p => {
-                const dx = p.x - mouse.x;
-                const dy = p.y - mouse.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < mouse.radius) {
-                    const angle = Math.atan2(dy, dx);
-                    const force = (mouse.radius - dist) / mouse.radius;
-                    p.x += Math.cos(angle) * force * 2;
-                    p.y += Math.sin(angle) * force * 2;
-                }
-            });
-        });
-
         initParticles();
         animate();
     </script>
