@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curse Odyssey - Minecraft Hardcore RP</title>
+    
+    <!-- Import Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Metal+Mania&family=Raleway:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-glow: #8a0b0b; /* Merah Darah */
+            --secondary-glow: #4a004a; /* Ungu Mistis */
+            --obsidian: #050505;
+            --dark-panel: rgba(10, 5, 10, 0.85);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--obsidian);
+            color: #e0e0e0;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        /* --- BACKGROUND & EFFECTS --- */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(circle at center, #1a051a 0%, #000000 90%);
+        }
+
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.98) 100%);
+            z-index: -1;
+        }
+
+        /* --- FONTS --- */
+        .font-gothic { font-family: 'Cinzel Decorative', cursive; }
+        .font-metal { font-family: 'Metal Mania', cursive; }
+        .font-sans-serif { font-family: 'Raleway', sans-serif; }
+
+        /* --- INTRO SCREEN TRANSITIONS --- */
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 50;
+            transition: opacity 1.5s ease-in, transform 1.5s cubic-bezier(0.7, 0, 0.84, 0);
+            transform-origin: center center;
+        }
+
+        /* Kelas untuk memicu animasi masuk ke abyss */
+        .zoom-into-abyss {
+            opacity: 0;
+            transform: scale(20); /* Zoom in ekstrem */
+            pointer-events: none;
+        }
+
+        /* --- MAIN WEBSITE (HIDDEN INITIALLY) --- */
+        #main-website {
+            display: none;
+            opacity: 0;
+            transition: opacity 2s ease-out;
+            min-height: 100vh;
+            padding-top: 80px; /* Space for navbar */
+        }
+
+        .show-website {
+            opacity: 1 !important;
+        }
+
+        /* --- TYPOGRAPHY EFFECTS --- */
+        .title-glow {
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        @keyframes pulse-glow {
+            0% { text-shadow: 0 0 5px var(--primary-glow), 0 0 15px var(--primary-glow); opacity: 0.9; }
+            100% { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px red; opacity: 1; }
+        }
+
+        /* --- BUTTONS --- */
+        .cursed-btn {
+            position: relative;
+            background: rgba(0,0,0,0.6);
+            color: #d1d1d1;
+            font-family: 'Cinzel Decorative', serif;
+            letter-spacing: 2px;
+            border: 1px solid #555;
+            padding: 1rem 3rem;
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+            white-space: nowrap; /* Mencegah teks turun saat animasi width */
+        }
+        .cursed-btn:hover {
+            color: #fff;
+            border-color: #8a0b0b;
+            box-shadow: 0 0 15px rgba(138, 11, 11, 0.6);
+            background: rgba(20, 0, 0, 0.6);
+        }
+
+        /* --- NAVBAR --- */
+        nav {
+            background: rgba(5, 5, 5, 0.9);
+            border-bottom: 1px solid #331010;
+            backdrop-filter: blur(5px);
+        }
+        .nav-link {
+            position: relative;
+            color: #aaa;
+            transition: color 0.3s;
+        }
+        .nav-link:hover { color: #fff; text-shadow: 0 0 8px var(--primary-glow); }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #8a0b0b;
+            transition: width 0.3s;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* --- CARDS & SECTIONS --- */
+        .info-card {
+            background: var(--dark-panel);
+            border: 1px solid #333;
+            border-left: 3px solid #8a0b0b;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+            border-color: #8a0b0b;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #1a051a;
+            color: #fff;
+            text-align: center;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            border: 1px solid #8a0b0b;
+            font-family: 'Cinzel Decorative', cursive;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        /* Helper for Logo Animation */
+        .logo-float { animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    </style>
+</head>
+<body class="text-white">
+
+    <!-- Canvas Background (Persisten di belakang) -->
+    <canvas id="canvas-container"></canvas>
+    
+    <!-- Vignette Overlay -->
+    <div class="vignette"></div>
+
+    <!-- ================= INTRO SCREEN (Landing Awal) ================= -->
+    <div id="intro-screen">
+        <div class="relative z-10 text-center px-4 max-w-4xl flex flex-col items-center">
+            
+            <!-- Logo -->
+            <div class="mb-6 w-32 md:w-48 lg:w-56 logo-float opacity-90">
+                <img src="logoCO.png" alt="Curse Odyssey" class="w-full h-auto object-contain drop-shadow-[0_0_15px_rgba(138,11,11,0.5)]" onerror="this.style.display='none'">
+            </div>
+
+            <div class="inline-block border border-red-900 bg-black/50 px-3 py-1 text-xs text-red-400 font-sans-serif mb-4 tracking-widest uppercase rounded">
+                Indonesia • Hardcore RP
+            </div>
+
+            <h1 class="font-metal text-5xl md:text-7xl lg:text-8xl mb-4 tracking-widest title-glow select-none">
+                CURSE ODYSSEY
+            </h1>
+
+            <p class="font-gothic text-gray-400 text-lg mb-12 tracking-wide opacity-80 max-w-xl">
+                Only the strongest survive the purge. <br>Are you ready to sacrifice everything?
+            </p>
+
+            <!-- Tombol Pemicu Zoom -->
+            <button class="cursed-btn group" onclick="enterTheAbyss()">
+                <span class="relative z-10 group-hover:text-red-100 font-bold">Enter the Abyss</span>
+                <div class="text-[10px] text-gray-500 mt-1 font-sans group-hover:text-red-300 transition-colors">Click to Enter Website</div>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ================= MAIN WEBSITE (Muncul setelah Zoom) ================= -->
+    <div id="main-website">
+        
+        <!-- Navbar -->
+        <nav class="fixed top-0 w-full z-40 px-6 py-4 flex justify-between items-center">
+            <div class="text-xl font-metal text-red-700 tracking-wider">Curse Odyssey</div>
+            <div class="hidden md:flex gap-8 font-gothic text-sm uppercase tracking-wide">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#information" class="nav-link">Information</a>
+                <a href="#rules" class="nav-link">Rules</a>
+                <a href="https://discord.gg/example" target="_blank" class="nav-link text-indigo-400">Discord</a>
+            </div>
+            <!-- Mobile Menu Icon (Placeholder) -->
+            <div class="md:hidden text-2xl cursor-pointer">≡</div>
+        </nav>
+
+        <!-- Section: Home -->
+        <section id="home" class="min-h-screen flex items-center justify-center px-4 relative pt-20">
+            <div class="max-w-5xl w-full grid md:grid-cols-2 gap-12 items-center">
+                <!-- Left Content -->
+                <div class="text-left space-y-6">
+                    <h2 class="font-metal text-5xl text-white leading-tight">
+                        The <span class="text-red-800">Cursed Lands</span> Await Your Arrival
+                    </h2>
+                    <p class="font-sans-serif text-gray-400 leading-relaxed">
+                        Bergabunglah dalam petualangan Roleplay Hardcore Minecraft Indonesia yang paling imersif. 
+                        Bangun ekonomi, bentuk aliansi, dan bertahan hidup dari kutukan kuno yang menghantui setiap malam.
+                        Ingat, kematian di sini bersifat permanen untuk karaktermu.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 mt-8 transition-all duration-500" id="button-container">
+                        <!-- Tombol Copy IP -->
+                        <button id="btn-copy-ip" onclick="rejectIPCopy()" class="cursed-btn text-sm py-3 px-6 flex items-center justify-center gap-2 group border-red-900 bg-red-950/20">
+                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                            <span id="ip-text">Copy Server IP</span>
+                        </button>
+                        
+                        <!-- Tombol Discord -->
+                        <a id="btn-discord" href="https://discord.gg/example" target="_blank" class="cursed-btn text-sm py-3 px-6 text-center border-indigo-900 hover:border-indigo-500">
+                            Join Discord
+                        </a>
+                    </div>
+                    <div class="text-xs text-gray-600 font-mono mt-2">Server Status: <span class="text-green-500">ONLINE</span> • 120/500 Players</div>
+                </div>
+
+                <!-- Right Content (Visual) -->
+                <div class="relative hidden md:block">
+                     <!-- Stylized Box for visual balance since no image provided aside from logo -->
+                     <div class="border border-gray-800 bg-black/40 p-8 transform rotate-2 hover:rotate-0 transition-transform duration-500">
+                        <h3 class="font-gothic text-2xl text-red-700 mb-4 border-b border-gray-800 pb-2">Latest News</h3>
+                        <ul class="space-y-4 font-sans-serif text-sm text-gray-300">
+                            <li class="flex justify-between">
+                                <span>Season 1: The Awakening</span>
+                                <span class="text-xs text-gray-500">2 Days Ago</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>New Economy System Live</span>
+                                <span class="text-xs text-gray-500">1 Week Ago</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>Hardcore Event: Blood Moon</span>
+                                <span class="text-xs text-gray-500">Coming Soon</span>
+                            </li>
+                        </ul>
+                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Information -->
+        <section id="information" class="py-24 px-4 bg-black/30">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="font-metal text-4xl text-red-800 mb-4">Server Features</h2>
+                    <div class="w-24 h-1 bg-red-900 mx-auto"></div>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="info-card p-8 rounded">
+                        <div class="text-4xl mb-4">💀</div>
+                        <h3 class="font-gothic text-xl text-white mb-2">Hardcore Roleplay</h3>
+                        <p class="font-sans-serif text-sm text-gray-400">
+                            Setiap nyawa berharga. Jika karaktermu mati, cerita mereka berakhir. Buatlah setiap keputusan dengan bijak.
+                        </p>
+                    </div>
+                    <!-- Feature 2 -->
+                    <div class="info-card p-8 rounded">
+                        <div class="text-4xl mb-4">💰</div>
+                        <h3 class="font-gothic text-xl text-white mb-2">Player Economy</h3>
+                        <p class="font-sans-serif text-sm text-gray-400">
+                            Sistem ekonomi yang sepenuhnya digerakkan oleh pemain. Berdagang, buka toko, atau jadilah raja pasar gelap.
+                        </p>
+                    </div>
+                    <!-- Feature 3 -->
+                    <div class="info-card p-8 rounded">
+                        <div class="text-4xl mb-4">⚔️</div>
+                        <h3 class="font-gothic text-xl text-white mb-2">Custom Artifacts</h3>
+                        <p class="font-sans-serif text-sm text-gray-400">
+                            Temukan item legendaris yang tersebar di dunia. Senjata terkutuk dengan kekuatan besar namun berisiko tinggi.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-black py-8 border-t border-gray-900 text-center font-sans-serif text-xs text-gray-600">
+            <p>&copy; 2026 Curse Odyssey Indonesia. All Rights Reserved.</p>
+            <p class="mt-2">Not affiliated with Mojang AB.</p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">IP Copied: play.curseodyssey.id</div>
+
+    <!-- JavaScript -->
+    <script>
+        // === 1. TRANSITION LOGIC (Enter the Abyss) ===
+        function enterTheAbyss() {
+            const introScreen = document.getElementById('intro-screen');
+            const mainWebsite = document.getElementById('main-website');
+            
+            // Trigger zoom class
+            introScreen.classList.add('zoom-into-abyss');
+
+            // Wait for animation (1.5s match CSS)
+            setTimeout(() => {
+                introScreen.style.display = 'none'; // Remove intro from flow
+                
+                // Show Main Website
+                mainWebsite.style.display = 'block';
+                // Trigger reflow agar transition opacity jalan
+                void mainWebsite.offsetWidth; 
+                mainWebsite.classList.add('show-website');
+                
+            }, 1200); // Sedikit lebih cepat dari durasi animasi CSS agar transisi mulus
+        }
+
+        // === 2. REJECT IP COPY LOGIC (New Requirement) ===
+        function rejectIPCopy() {
+            const btnCopy = document.getElementById("btn-copy-ip");
+            const btnDiscord = document.getElementById("btn-discord");
+            const toast = document.getElementById("toast");
+
+            // 1. Tampilkan Pesan No No
+            toast.innerText = "No no, kamu harus melakukan whitelist di join discord";
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
+
+            // 2. Hilangkan Tombol Copy IP dengan animasi
+            btnCopy.style.transition = "all 0.5s ease";
+            btnCopy.style.opacity = "0";
+            btnCopy.style.transform = "scale(0.8)";
+            
+            // Setelah sedikit delay, set properti layout agar Discord bergeser
+            setTimeout(() => {
+                btnCopy.style.maxWidth = "0";
+                btnCopy.style.padding = "0";
+                btnCopy.style.margin = "0";
+                btnCopy.style.border = "0";
+                btnCopy.style.overflow = "hidden";
+            }, 200);
+            
+            // Fokuskan user ke tombol Discord (Visual cue)
+            setTimeout(() => {
+                btnDiscord.classList.add('animate-pulse');
+                btnDiscord.style.boxShadow = "0 0 25px rgba(75, 0, 130, 0.8)";
+            }, 500);
+        }
+
+
+        // === 3. CANVAS PARTICLES (Background) ===
+        const canvas = document.getElementById('canvas-container');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedY = Math.random() * 0.5 + 0.2;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.fadeSpeed = Math.random() * 0.002 + 0.001;
+                this.fadeDirection = Math.random() > 0.5 ? 1 : -1;
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.opacity += this.fadeSpeed * this.fadeDirection;
+                if (this.opacity >= 0.6 || this.opacity <= 0.1) this.fadeDirection *= -1;
+                if (this.y > height) { this.y = -10; this.x = Math.random() * width; }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(180, 180, 190, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            const count = width < 768 ? 50 : 120;
+            for (let i = 0; i < count; i++) particles.push(new Particle());
+        }
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+
+        // Mouse interaction
+        let mouse = { x: null, y: null, radius: 100 };
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+            particles.forEach(p => {
+                const dx = p.x - mouse.x;
+                const dy = p.y - mouse.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < mouse.radius) {
+                    const angle = Math.atan2(dy, dx);
+                    const force = (mouse.radius - dist) / mouse.radius;
+                    p.x += Math.cos(angle) * force * 2;
+                    p.y += Math.sin(angle) * force * 2;
+                }
+            });
+        });
+
+        initParticles();
+        animate();
+    </script>
+</body>
+</html>
