@@ -31,7 +31,6 @@
             height: 100%;
             background-color: var(--obsidian);
             color: #e0e0e0;
-            /* PERBAIKAN 1: Matikan scroll body, pindahkan ke page-view */
             overflow: hidden; 
             cursor: default;
         }
@@ -83,74 +82,37 @@
             text-shadow: 0 0 10px rgba(191, 149, 63, 0.3);
         }
 
-        /* --- PAGE SLIDE ANIMATIONS (PERBAIKAN SCROLL) --- */
-        /* Container for pages */
+        /* --- PAGE SLIDE ANIMATIONS --- */
         #pages-wrapper {
             position: relative;
             width: 100%;
-            height: 100%; /* Full height */
+            height: 100%;
             overflow: hidden;
         }
 
-        /* Individual Page Styles */
         .page-view {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%; /* Full height viewport */
-            /* PERBAIKAN 2: Scrollbar ada di sini sekarang */
+            height: 100%;
             overflow-y: auto; 
             overflow-x: hidden;
-            padding-top: 80px; /* Space for navbar */
+            padding-top: 80px; 
             transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.8s ease;
             will-change: transform, opacity;
-            
-            /* Hide scrollbar for cleaner look but keep functionality */
             scrollbar-width: thin;
             scrollbar-color: #8a0b0b #1a051a;
         }
 
-        /* Custom Scrollbar Webkit */
-        .page-view::-webkit-scrollbar {
-            width: 8px;
-        }
-        .page-view::-webkit-scrollbar-track {
-            background: #1a051a; 
-        }
-        .page-view::-webkit-scrollbar-thumb {
-            background-color: #8a0b0b; 
-            border-radius: 4px;
-        }
+        .page-view::-webkit-scrollbar { width: 8px; }
+        .page-view::-webkit-scrollbar-track { background: #1a051a; }
+        .page-view::-webkit-scrollbar-thumb { background-color: #8a0b0b; border-radius: 4px; }
 
-        /* States for Main Page (Home/Info) */
-        .view-main-active {
-            transform: translateX(0);
-            opacity: 1;
-            z-index: 10;
-            pointer-events: auto;
-        }
-        .view-main-hidden {
-            transform: translateX(-100%); /* Geser ke kiri */
-            opacity: 0;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* States for Store Page */
-        .view-store-active {
-            transform: translateX(0);
-            opacity: 1;
-            z-index: 10;
-            pointer-events: auto;
-        }
-        .view-store-hidden {
-            transform: translateX(100%); /* Geser ke kanan */
-            opacity: 0;
-            z-index: 0;
-            pointer-events: none;
-        }
-
+        .view-main-active { transform: translateX(0); opacity: 1; z-index: 10; pointer-events: auto; }
+        .view-main-hidden { transform: translateX(-100%); opacity: 0; z-index: 0; pointer-events: none; }
+        .view-store-active { transform: translateX(0); opacity: 1; z-index: 10; pointer-events: auto; }
+        .view-store-hidden { transform: translateX(100%); opacity: 0; z-index: 0; pointer-events: none; }
 
         /* --- INTRO SCREEN --- */
         #intro-screen {
@@ -164,18 +126,14 @@
             transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out;
             background: #000;
         }
-        .zoom-into-abyss {
-            opacity: 0;
-            transform: scale(15);
-            pointer-events: none;
-        }
+        .zoom-into-abyss { opacity: 0; transform: scale(15); pointer-events: none; }
 
         /* --- MAIN WEBSITE --- */
         #main-website {
             display: none;
             opacity: 0;
             transition: opacity 2s ease-out;
-            height: 100%; /* Ensure full height */
+            height: 100%;
         }
         .show-website { opacity: 1 !important; }
 
@@ -343,20 +301,16 @@
                 <span class="text-2xl">☠</span> Curse Odyssey
             </div>
             <div class="flex gap-6 md:gap-10 font-gothic text-xs md:text-sm uppercase tracking-wide mx-auto sm:mx-0">
-                <!-- Nav Link dengan Fungsi Switch Page -->
                 <a href="#" onclick="showMainPage('home')" class="text-gray-400 hover:text-white transition-colors relative group">
                     Home <span class="absolute -bottom-1 left-0 w-0 h-[1px] bg-red-600 transition-all group-hover:w-full"></span>
                 </a>
                 <a href="#" onclick="showMainPage('information')" class="text-gray-400 hover:text-white transition-colors relative group">
                     Info <span class="absolute -bottom-1 left-0 w-0 h-[1px] bg-red-600 transition-all group-hover:w-full"></span>
                 </a>
-                
-                <!-- BUTTON STORE (Special Trigger) -->
                 <a href="#" onclick="showStorePage()" class="text-yellow-500 font-bold hover:text-yellow-200 transition-colors drop-shadow-sm flex items-center gap-1">
                     Store <span class="text-[10px] bg-red-900 text-white px-1 rounded animate-pulse">NEW</span>
                 </a>
-                
-                <a href="https://discord.gg/example" target="_blank" class="text-indigo-400 hover:text-indigo-300 transition-colors">
+                <a href="https://dc.gg/curseodyssey" target="_blank" class="text-indigo-400 hover:text-indigo-300 transition-colors">
                     Discord
                 </a>
             </div>
@@ -373,7 +327,7 @@
                     <div class="max-w-6xl w-full grid md:grid-cols-2 gap-16 items-center">
                         <div class="text-left space-y-8 reveal active">
                             <h2 class="font-metal text-5xl md:text-7xl text-white leading-[1.1]">
-                                The <span class="text-gold block mt-2 text-6xl md:text-8xl">CurseBane</span>
+                                The <span class="text-gold block mt-2 text-6xl md:text-8xl">Cursed Bane</span>
                             </h2>
                             <p class="font-sans-serif text-gray-400 leading-7 text-lg border-l-2 border-red-900 pl-4">
                                 Bergabunglah dalam petualangan Roleplay Hardcore Minecraft Indonesia yang paling imersif. 
@@ -385,7 +339,7 @@
                                     <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#0f0]"></span>
                                     <span>Copy IP</span>
                                 </button>
-                                <a id="btn-discord" href="https://discord.gg/example" target="_blank" class="px-8 py-3 border border-indigo-900/50 bg-indigo-950/20 text-indigo-300 hover:bg-indigo-900/40 hover:text-white transition-all uppercase tracking-wider font-gothic text-sm flex items-center justify-center">
+                                <a id="btn-discord" href="https://dc.gg/curseodyssey" target="_blank" class="px-8 py-3 border border-indigo-900/50 bg-indigo-950/20 text-indigo-300 hover:bg-indigo-900/40 hover:text-white transition-all uppercase tracking-wider font-gothic text-sm flex items-center justify-center">
                                     Join Discord
                                 </a>
                             </div>
@@ -461,9 +415,8 @@
                             <h2 class="font-metal text-5xl md:text-6xl text-gold mb-4 drop-shadow-lg">Treasury & Ranks</h2>
                         </div>
 
-                        <!-- RANK SHOP -->
-                        <div class="grid lg:grid-cols-2 gap-10 mb-20 max-w-5xl mx-auto items-center">
-                            
+                        <!-- 1. RANK SHOP -->
+                        <div class="grid lg:grid-cols-2 gap-8 mb-16 max-w-5xl mx-auto items-stretch">
                             <!-- VIP Rank -->
                             <div class="glass-card p-8 rounded-2xl flex flex-col h-full border-t-4 border-gray-600">
                                 <div class="flex justify-between items-start mb-6">
@@ -481,7 +434,7 @@
                             </div>
 
                             <!-- PREMIUM Rank -->
-                            <div class="glass-card rank-premium p-10 rounded-2xl flex flex-col transform scale-105 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                            <div class="glass-card rank-premium p-10 rounded-2xl flex flex-col transform lg:scale-105 shadow-[0_0_50px_rgba(0,0,0,0.5)] z-10">
                                 <div class="absolute top-0 right-0 bg-gradient-to-l from-red-800 to-transparent text-white text-xs font-bold px-4 py-1 rounded-bl-xl">POPULAR</div>
                                 <div class="flex justify-between items-start mb-6">
                                     <div>
@@ -499,7 +452,96 @@
                             </div>
                         </div>
 
-                        <!-- MONEY SHOP -->
+                        <!-- 2. FUTURE RANKS (Ongoing/Coming Soon) -->
+                        <div class="grid md:grid-cols-2 gap-6 mb-20 max-w-4xl mx-auto">
+                            <!-- Cursed+ -->
+                            <div class="glass-card p-6 rounded-lg border-l-4 border-purple-800 flex items-center justify-between opacity-80 hover:opacity-100 transition-opacity">
+                                <div>
+                                    <h5 class="font-metal text-2xl text-purple-400">CURSED+</h5>
+                                    <p class="text-xs text-gray-400 mt-1">Status: <span class="text-yellow-500 font-bold animate-pulse">ONGOING</span></p>
+                                    <p class="text-xs text-gray-500 mt-2">Rank eksklusif sedang dalam tahap finalisasi.</p>
+                                </div>
+                                <button class="px-4 py-2 border border-gray-600 text-gray-500 text-xs cursor-not-allowed uppercase" disabled>Locked</button>
+                            </div>
+                            <!-- Cursed++ -->
+                            <div class="glass-card p-6 rounded-lg border-l-4 border-gray-700 flex items-center justify-between opacity-60">
+                                <div>
+                                    <h5 class="font-metal text-2xl text-gray-500">CURSED++</h5>
+                                    <p class="text-xs text-gray-400 mt-1">Status: <span class="text-gray-500 font-bold">COMING SOON</span></p>
+                                    <p class="text-xs text-gray-500 mt-2">Tingkatan tertinggi dari kutukan. Segera hadir.</p>
+                                </div>
+                                <button class="px-4 py-2 border border-gray-700 text-gray-600 text-xs cursor-not-allowed uppercase" disabled>Locked</button>
+                            </div>
+                        </div>
+
+                        <!-- 3. MYSTICAL KEYS & BOOSTER (NEW SECTION) -->
+                        <div class="mb-16">
+                            <h3 class="font-gothic text-2xl text-gray-300 mb-8 border-l-4 border-blue-600 pl-4">Mystical Keys & Boosters</h3>
+                            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                
+                                <!-- Key Sigma -->
+                                <div class="glass-card p-6 rounded-xl relative group">
+                                    <div class="absolute top-2 right-2 text-2xl opacity-50 group-hover:opacity-100 transition-opacity">🗿</div>
+                                    <h4 class="font-metal text-xl text-gray-200 mb-2">Key Sigma</h4>
+                                    <p class="text-xs text-gray-400 mb-4 h-10">Mulai dominasimu dengan item starter pack solid. Low cost, high value.</p>
+                                    <div class="mt-auto">
+                                        <div class="text-sm font-bold text-blue-300 mb-3">3K IDR / 3K IC</div>
+                                        <button onclick="buyItem('Key Sigma')" class="store-btn text-xs w-full py-2 border-blue-900 hover:bg-blue-900/40">Purchase</button>
+                                    </div>
+                                </div>
+
+                                <!-- Key Mewing -->
+                                <div class="glass-card p-6 rounded-xl relative group">
+                                    <div class="absolute top-2 right-2 text-2xl opacity-50 group-hover:opacity-100 transition-opacity">🤫</div>
+                                    <h4 class="font-metal text-xl text-purple-300 mb-2">Key Mewing</h4>
+                                    <p class="text-xs text-gray-400 mb-4 h-10">Pertahankan streak kemenanganmu. Berisi kosmetik rare & resource penting.</p>
+                                    <div class="mt-auto">
+                                        <div class="text-sm font-bold text-purple-300 mb-3">5K IDR / IC</div>
+                                        <button onclick="buyItem('Key Mewing')" class="store-btn text-xs w-full py-2 border-purple-900 hover:bg-purple-900/40">Purchase</button>
+                                    </div>
+                                </div>
+
+                                <!-- Key Legends -->
+                                <div class="glass-card p-6 rounded-xl relative group border border-yellow-900/30">
+                                    <div class="absolute top-2 right-2 text-2xl opacity-50 group-hover:opacity-100 transition-opacity">🏆</div>
+                                    <h4 class="font-metal text-xl text-yellow-500 mb-2">Key Legends</h4>
+                                    <p class="text-xs text-gray-400 mb-4 h-10">Hanya untuk para legenda. Kesempatan mendapatkan senjata Tier-2 & Armor.</p>
+                                    <div class="mt-auto">
+                                        <div class="text-sm font-bold text-yellow-500 mb-3">10K IDR / IC</div>
+                                        <button onclick="buyItem('Key Legends')" class="store-btn text-xs w-full py-2 border-yellow-700 hover:bg-yellow-900/40">Purchase</button>
+                                    </div>
+                                </div>
+
+                                <!-- Key Cursed -->
+                                <div class="glass-card p-6 rounded-xl relative group border border-red-900/50 shadow-[0_0_15px_rgba(138,11,11,0.1)]">
+                                    <div class="absolute top-2 right-2 text-2xl opacity-50 group-hover:opacity-100 transition-opacity">☠️</div>
+                                    <h4 class="font-metal text-xl text-red-600 mb-2">Key Cursed</h4>
+                                    <p class="text-xs text-gray-400 mb-4 h-10">Kunci terlarang dari Abyss. Berisi Artifact Tier-1 & Item Endgame mematikan.</p>
+                                    <div class="mt-auto">
+                                        <div class="text-sm font-bold text-red-500 mb-3">20K IDR / IC</div>
+                                        <button onclick="buyItem('Key Cursed')" class="store-btn text-xs w-full py-2 border-red-600 bg-red-950/20 hover:bg-red-900/60">Purchase</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SPECIAL BOOSTER (Wide Card) -->
+                            <div class="mt-6 glass-card p-6 rounded-xl flex flex-col md:flex-row items-center justify-between gap-6 border-l-4 border-cyan-500">
+                                <div class="flex items-center gap-4">
+                                    <div class="text-4xl">🦅</div>
+                                    <div>
+                                        <h4 class="font-metal text-2xl text-cyan-400">Flight Booster</h4>
+                                        <p class="text-sm text-gray-300">Akses command <code class="bg-black px-1 rounded text-cyan-500">/fly</code> selama 10 hari.</p>
+                                        <p class="text-xs text-gray-500 mt-1">Jelajahi map tanpa batas dan bangun markas di langit.</p>
+                                    </div>
+                                </div>
+                                <div class="text-center md:text-right min-w-[150px]">
+                                    <div class="text-lg font-bold text-cyan-300 mb-2">50K IDR / IC</div>
+                                    <button onclick="buyItem('Flight Booster 10 Days')" class="store-btn w-full py-2 border-cyan-700 hover:bg-cyan-900/40 text-cyan-100">Get Wings</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. MONEY SHOP (EXISTING) -->
                         <div class="bg-black/40 backdrop-blur-md border border-gray-800 rounded-3xl p-8">
                             <h3 class="font-gothic text-2xl text-gray-300 mb-8 border-l-4 border-yellow-600 pl-4">Currency Exchange</h3>
                             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
