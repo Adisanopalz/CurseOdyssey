@@ -18,9 +18,9 @@
         :root {
             --primary-glow: #8a0b0b; /* Merah Darah */
             --secondary-glow: #2d002d; /* Ungu Gelap */
-            --gold-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            --gold-color: #ffd700;
             --obsidian: #050505;
-            --glass-bg: rgba(20, 10, 20, 0.4);
+            --glass-bg: rgba(20, 10, 20, 0.6);
             --glass-border: rgba(255, 255, 255, 0.1);
         }
 
@@ -35,38 +35,71 @@
             cursor: default;
         }
 
-        /* --- BACKGROUND & EFFECTS --- */
+        /* --- BACKGROUND LAYERS --- */
         #canvas-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -10; 
             background: radial-gradient(circle at center, #1a051a 0%, #000000 90%);
         }
 
-        #spotlight {
+        /* Background Elements (Blobs) */
+        .ambient-blob {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -5;
+            opacity: 0.3;
+            animation: blob-float 15s infinite alternate ease-in-out;
             pointer-events: none;
-            z-index: -1;
-            background: radial-gradient(600px circle at var(--x, 50%) var(--y, 50%), rgba(138, 11, 11, 0.15), transparent 40%);
-            transition: opacity 0.5s;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #300000; }
+        .blob-2 { bottom: -10%; right: -10%; width: 40vw; height: 40vw; background: #1a0030; animation-delay: -5s; }
+
+        @keyframes blob-float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(20px, -20px) scale(1.05); }
+        }
+
+        /* Runes Background */
+        .rune-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: -4;
+            overflow: hidden;
+        }
+        .rune {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.05);
+            font-family: 'Cinzel Decorative', serif;
+            font-weight: bold;
+            user-select: none;
+            animation: rune-rise linear infinite;
+        }
+        @keyframes rune-rise {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            50% { opacity: 0.4; }
+            100% { transform: translateY(-10vh) rotate(45deg); opacity: 0; }
+        }
+
+        /* Scanlines */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 1; 
+            opacity: 0.2;
         }
 
         .vignette {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
-            background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.95) 100%);
-            z-index: 0;
+            background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.8) 100%);
+            z-index: 2;
         }
 
         /* --- FONTS & TEXTURE --- */
@@ -75,14 +108,36 @@
         .font-sans-serif { font-family: 'Raleway', sans-serif; }
 
         .text-gold {
-            background: var(--gold-gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 0 10px rgba(191, 149, 63, 0.3);
+            color: var(--gold-color);
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
         }
 
-        /* --- PAGE SLIDE ANIMATIONS --- */
+        /* --- INTRO SCREEN --- */
+        #intro-screen {
+            position: fixed; 
+            inset: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            flex-direction: column; 
+            z-index: 9999;
+            transition: opacity 1s ease-in-out, transform 1s ease-in-out; 
+            background: #000;
+        }
+        .zoom-into-abyss { opacity: 0; transform: scale(5); pointer-events: none; }
+
+        /* --- MAIN WEBSITE --- */
+        #main-website {
+            display: none;
+            opacity: 0;
+            transition: opacity 1.5s ease-out;
+            height: 100%;
+            position: relative;
+            z-index: 10;
+        }
+        .show-website { opacity: 1 !important; }
+
+        /* --- PAGE SLIDE WRAPPER & LOGIC --- */
         #pages-wrapper {
             position: relative;
             width: 100%;
@@ -92,95 +147,60 @@
 
         .page-view {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             overflow-y: auto; 
             overflow-x: hidden;
             padding-top: 80px; 
-            transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.8s ease;
+            transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1), opacity 0.6s ease;
             will-change: transform, opacity;
             scrollbar-width: thin;
             scrollbar-color: #8a0b0b #1a051a;
         }
-
-        .page-view::-webkit-scrollbar { width: 8px; }
-        .page-view::-webkit-scrollbar-track { background: #1a051a; }
-        .page-view::-webkit-scrollbar-thumb { background-color: #8a0b0b; border-radius: 4px; }
-
-        .view-main-active { transform: translateX(0); opacity: 1; z-index: 10; pointer-events: auto; }
-        .view-main-hidden { transform: translateX(-100%); opacity: 0; z-index: 0; pointer-events: none; }
-        .view-store-active { transform: translateX(0); opacity: 1; z-index: 10; pointer-events: auto; }
+        
+        /* === VIEW STATES === */
+        
+        /* MAIN VIEW (Center) */
+        .view-main-active { transform: translateX(0); opacity: 1; z-index: 20; pointer-events: auto; }
+        .view-main-hidden-left { transform: translateX(-30%) scale(0.9); opacity: 0; z-index: 0; pointer-events: none; } /* When store is open */
+        .view-main-hidden-right { transform: translateX(30%) scale(0.9); opacity: 0; z-index: 0; pointer-events: none; } /* When community is open */
+        
+        /* STORE VIEW (From Right) */
+        .view-store-active { transform: translateX(0); opacity: 1; z-index: 20; pointer-events: auto; }
         .view-store-hidden { transform: translateX(100%); opacity: 0; z-index: 0; pointer-events: none; }
 
-        /* --- INTRO SCREEN --- */
-        #intro-screen {
-            position: fixed;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            z-index: 100;
-            transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out;
-            background: #000;
-        }
-        .zoom-into-abyss { opacity: 0; transform: scale(15); pointer-events: none; }
-
-        /* --- MAIN WEBSITE --- */
-        #main-website {
-            display: none;
-            opacity: 0;
-            transition: opacity 2s ease-out;
-            height: 100%;
-        }
-        .show-website { opacity: 1 !important; }
+        /* COMMUNITY VIEW (From Left) */
+        .view-community-active { transform: translateX(0); opacity: 1; z-index: 20; pointer-events: auto; }
+        .view-community-hidden { transform: translateX(-100%); opacity: 0; z-index: 0; pointer-events: none; }
 
         /* --- UI COMPONENTS --- */
-        
         .glass-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            transition: transform 0.2s ease-out, border-color 0.3s;
         }
         .glass-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            border-color: rgba(138, 11, 11, 0.5);
-            box-shadow: 0 15px 40px rgba(138, 11, 11, 0.2);
+            border-color: rgba(138, 11, 11, 0.8);
         }
 
         .cursed-btn {
             position: relative;
-            background: transparent;
-            color: #d1d1d1;
+            background: rgba(0,0,0,0.5);
+            color: #e0e0e0;
             font-family: 'Cinzel Decorative', serif;
             letter-spacing: 2px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #555;
             padding: 1rem 3rem;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             text-transform: uppercase;
             cursor: pointer;
-            overflow: hidden;
-            transition: all 0.4s ease;
-            z-index: 1;
+            transition: all 0.3s ease;
+            z-index: 10;
         }
-        .cursed-btn::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 0%; height: 100%;
-            background: #8a0b0b;
-            z-index: -1;
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .cursed-btn:hover::before { width: 100%; }
-        .cursed-btn:hover { border-color: #8a0b0b; color: #fff; box-shadow: 0 0 20px rgba(138,11,11,0.6); }
+        .cursed-btn:hover { border-color: #8a0b0b; color: #fff; box-shadow: 0 0 15px rgba(138,11,11,0.6); background: rgba(30,0,0,0.6); }
 
         .store-btn {
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.7);
             border: 1px solid #444;
             color: #ccc;
             padding: 8px 16px;
@@ -188,171 +208,264 @@
             font-weight: 600;
             letter-spacing: 1px;
             text-transform: uppercase;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.2s;
+            cursor: pointer;
         }
-        .store-btn:hover { border-color: #ffd700; color: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+        .store-btn:hover { border-color: #ffd700; color: #ffd700; background: rgba(20,20,0,0.3); }
 
         nav {
-            background: rgba(5, 5, 5, 0.7);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: rgba(5, 5, 5, 0.9);
+            border-bottom: 1px solid #331010;
             transition: background 0.3s;
         }
-        nav:hover { background: rgba(5, 5, 5, 0.95); }
 
-        .rank-premium {
-            background: linear-gradient(160deg, rgba(30,10,10,0.8), rgba(10,5,5,0.9));
-            border: 1px solid #8a0b0b;
-            position: relative;
-        }
-        .rank-premium::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            z-index: -1;
-            background: linear-gradient(45deg, #8a0b0b, transparent, #ffd700, transparent, #8a0b0b);
-            background-size: 400%;
-            animation: border-animate 10s linear infinite;
-            border-radius: inherit;
-            opacity: 0.5;
-        }
-        @keyframes border-animate {
-            0% { background-position: 0 0; }
-            50% { background-position: 100% 0; }
-            100% { background-position: 0 0; }
-        }
-
+        /* Utility */
+        .rank-premium { background: linear-gradient(160deg, rgba(40,10,10,0.9), rgba(10,5,5,0.95)); border: 1px solid #8a0b0b; }
+        
         #toast {
             visibility: hidden;
-            min-width: 280px;
-            background: rgba(10, 5, 5, 0.95);
-            border-left: 4px solid #8a0b0b;
+            min-width: 250px;
+            background: #111;
+            border: 1px solid #8a0b0b;
             color: #fff;
             text-align: center;
             padding: 16px;
             position: fixed;
-            z-index: 100;
+            z-index: 10000;
             left: 50%;
             bottom: 30px;
-            transform: translateX(-50%) translateY(20px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-            font-family: 'Raleway', sans-serif;
+            transform: translateX(-50%);
             opacity: 0;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-radius: 4px;
+            transition: opacity 0.3s;
         }
-        #toast.show { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
+        #toast.show { visibility: visible; opacity: 1; }
 
-        .logo-float { animation: float 6s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(138, 11, 11, 0.3)); }
-        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(2deg); } }
+        .logo-float { animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-        /* Scroll Reveal (Hanya untuk halaman Main) */
-        .reveal { opacity: 0; transform: translateY(50px); transition: all 1s cubic-bezier(0.5, 0, 0, 1); }
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease; }
         .reveal.active { opacity: 1; transform: translateY(0); }
-        .delay-100 { transition-delay: 0.1s; }
-        .delay-200 { transition-delay: 0.2s; }
-        .delay-300 { transition-delay: 0.3s; }
 
+        /* Legacy Line */
+        .legacy-line {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, #8a0b0b, transparent);
+            z-index: 0;
+        }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased text-gray-200">
 
+    <!-- Backgrounds -->
     <canvas id="canvas-container"></canvas>
-    <div id="spotlight"></div>
+    <div class="ambient-blob blob-1"></div>
+    <div class="ambient-blob blob-2"></div>
+    <div class="rune-container" id="runes"></div>
+    <div class="scanlines"></div>
     <div class="vignette"></div>
 
     <!-- ================= INTRO SCREEN ================= -->
     <div id="intro-screen">
         <div class="relative z-10 text-center px-4 max-w-4xl flex flex-col items-center">
             
-            <div class="mb-8 w-40 md:w-56 lg:w-64 logo-float relative">
-                <div class="absolute inset-0 bg-red-900 blur-[60px] opacity-40 rounded-full animate-pulse"></div>
-                <img src="logoCO.png" alt="Curse Odyssey" class="relative z-10 w-full h-auto object-contain" onerror="this.style.display='none'">
+            <div class="mb-8 w-40 md:w-56 logo-float">
+                <img src="logoCO.png" alt="CO Logo" class="w-full h-auto object-contain" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block'">
+                <div id="logo-fallback" style="display:none; font-size: 4rem;">☠</div>
             </div>
 
-            <div class="inline-block border border-red-900/50 bg-black/40 backdrop-blur-sm px-4 py-1 text-xs md:text-sm text-red-400 font-sans-serif mb-6 tracking-[0.3em] uppercase rounded shadow-[0_0_15px_rgba(138,11,11,0.2)]">
+            <div class="inline-block border border-red-900/50 bg-black/60 px-4 py-1 text-xs md:text-sm text-red-400 font-sans-serif mb-6 tracking-[0.3em] uppercase rounded">
                 Indonesia • Hardcore RP
             </div>
 
-            <h1 class="font-metal text-6xl md:text-8xl lg:text-9xl mb-6 tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-gray-100 to-gray-600 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] select-none">
+            <h1 class="font-metal text-6xl md:text-7xl lg:text-8xl mb-6 tracking-widest text-gray-200 drop-shadow-[0_0_10px_rgba(0,0,0,1)] select-none">
                 CURSE ODYSSEY
             </h1>
 
-            <p class="font-gothic text-gray-400 text-lg md:text-xl mb-12 tracking-wide opacity-80 max-w-xl leading-relaxed">
-                Only the <span class="text-red-500">strongest</span> survive the purge. <br>
+            <p class="font-gothic text-gray-400 text-lg md:text-xl mb-12 tracking-wide opacity-80 max-w-xl">
                 The Abyss is calling your name.
             </p>
 
-            <button class="cursed-btn group" onclick="enterTheAbyss()">
-                <span class="relative z-10 font-bold tracking-widest group-hover:tracking-[0.2em] transition-all duration-300">Enter the Abyss</span>
+            <button class="cursed-btn" onclick="enterTheAbyss()">
+                Enter the Abyss
             </button>
         </div>
     </div>
 
 
-    <!-- ================= MAIN WEBSITE (CONTAINER) ================= -->
+    <!-- ================= MAIN WEBSITE ================= -->
     <div id="main-website">
         
-        <!-- Navbar Fixed -->
-        <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center transition-all duration-300" id="navbar">
-            <div class="text-xl font-metal text-red-600 tracking-wider hidden sm:flex items-center gap-2 drop-shadow-[0_0_5px_rgba(255,0,0,0.5)]">
+        <!-- Navbar -->
+        <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center" id="navbar">
+            <div class="text-xl font-metal text-red-600 tracking-wider hidden sm:flex items-center gap-2 cursor-pointer hover:text-red-400 transition-colors" onclick="showPage('main')">
                 <span class="text-2xl">☠</span> Curse Odyssey
             </div>
             <div class="flex gap-6 md:gap-10 font-gothic text-xs md:text-sm uppercase tracking-wide mx-auto sm:mx-0">
-                <a href="#" onclick="showMainPage('home')" class="text-gray-400 hover:text-white transition-colors relative group">
-                    Home <span class="absolute -bottom-1 left-0 w-0 h-[1px] bg-red-600 transition-all group-hover:w-full"></span>
-                </a>
-                <a href="#" onclick="showMainPage('information')" class="text-gray-400 hover:text-white transition-colors relative group">
-                    Info <span class="absolute -bottom-1 left-0 w-0 h-[1px] bg-red-600 transition-all group-hover:w-full"></span>
-                </a>
-                <a href="https://curse-umber.vercel.app/" class="text-yellow-500 font-bold hover:text-yellow-200 transition-colors drop-shadow-sm flex items-center gap-1">
-                    Community <span class="text-[10px] bg-red-900 text-white px-1 rounded animate-pulse">NEW</span>
-                </a>
-                <a href="https://dc.gg/curseodyssey" target="_blank" class="text-indigo-400 hover:text-indigo-300 transition-colors">
-                    
-                </a>
+                <a href="#" onclick="showPage('main')" class="hover:text-white transition-colors">Home</a>
+                <a href="#" onclick="showPage('community')" class="hover:text-white transition-colors text-purple-400 font-bold">Community</a>
+                <a href="#" onclick="showPage('store')" class="text-yellow-500 font-bold hover:text-yellow-200 transition-colors">Store <span class="text-[9px] bg-red-900 text-white px-1 ml-1 rounded">NEW</span></a>
+                <a href="https://dc.gg/curseodyssey" target="_blank" class="text-indigo-400 hover:text-indigo-300">Discord</a>
             </div>
         </nav>
 
-        <!-- WRAPPER UNTUK HALAMAN -->
         <div id="pages-wrapper">
             
-            <!-- ====== PAGE 1: MAIN VIEW (Home & Info) ====== -->
+            <!-- ====== 1. COMMUNITY VIEW (LEFT) ====== -->
+            <div id="view-community" class="page-view view-community-hidden">
+                <section class="min-h-screen px-4 pb-20 relative pt-10">
+                    <div class="max-w-6xl mx-auto relative z-10">
+                        <button onclick="showPage('main')" class="mb-8 flex items-center gap-2 text-gray-400 hover:text-white transition-colors bg-white/5 px-4 py-2 rounded">
+                            <span>→</span> Back to Home
+                        </button>
+
+                        <div class="text-center mb-16">
+                            <span class="text-purple-500 font-gothic tracking-widest text-sm uppercase mb-2 block">Our History & Heroes</span>
+                            <h2 class="font-metal text-5xl text-gray-200 mb-4">Legacy & Legends</h2>
+                        </div>
+
+                        <!-- LEGACY SECTION -->
+                        <div class="relative mb-24">
+                            <div class="hidden md:block legacy-line"></div>
+                            
+                            <div class="grid gap-12">
+                                <!-- 2023 -->
+                                <div class="relative md:flex items-center justify-between group">
+                                    <div class="md:w-5/12 glass-card p-6 rounded-xl border-l-4 border-gray-600 hover:border-white transition-colors text-right order-1">
+                                        <h3 class="font-metal text-2xl text-gray-400">Curse Vanilla MCPE</h3>
+                                        <span class="text-xs font-bold text-gray-600 block mb-2">Feb 2023</span>
+                                        <p class="text-sm text-gray-400 font-sans-serif">Sebuah awal sederhana. Didirikan oleh <b class="text-white">Montxyx</b>, nama yang lahir dari ketidaksengajaan namun menjadi legenda.</p>
+                                    </div>
+                                    <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-8 h-8 rounded-full bg-gray-800 border border-gray-600 z-10">🌱</div>
+                                    <div class="md:w-5/12 order-2"></div>
+                                </div>
+
+                                <!-- COLTK -->
+                                <div class="relative md:flex items-center justify-between group">
+                                    <div class="md:w-5/12 order-1"></div>
+                                    <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-8 h-8 rounded-full bg-blue-900 border border-blue-600 z-10">🔮</div>
+                                    <div class="md:w-5/12 glass-card p-6 rounded-xl border-r-4 border-blue-600 hover:border-blue-400 transition-colors order-2">
+                                        <h3 class="font-metal text-2xl text-blue-400">Curse Of The Legend Key</h3>
+                                        <span class="text-xs font-bold text-blue-800 block mb-2">The Evolution Era</span>
+                                        <p class="text-sm text-gray-400 font-sans-serif">Memperkenalkan sihir enchant level tinggi. Fondasi Java Edition diletakkan. Pertemuan takdir dengan <b class="text-blue-300">Epan, Sanopalz, dan Zensuan</b> mengubah segalanya.</p>
+                                    </div>
+                                </div>
+
+                                <!-- CFL -->
+                                <div class="relative md:flex items-center justify-between group">
+                                    <div class="md:w-5/12 glass-card p-6 rounded-xl border-l-4 border-red-600 hover:border-red-400 transition-colors text-right order-1">
+                                        <h3 class="font-metal text-2xl text-red-500">Cursefury Legends (CFL)</h3>
+                                        <span class="text-xs font-bold text-red-800 block mb-2">Community Explosion</span>
+                                        <p class="text-sm text-gray-400 font-sans-serif">Komunitas meledak, didukung oleh pilar-pilar seperti <b class="text-red-300">Rexdzio, Ahmad, dan Latif</b>.</p>
+                                    </div>
+                                    <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-8 h-8 rounded-full bg-red-900 border border-red-600 z-10">🔥</div>
+                                    <div class="md:w-5/12 order-2"></div>
+                                </div>
+
+                                <!-- NOW -->
+                                <div class="relative md:flex items-center justify-between group">
+                                    <div class="md:w-5/12 order-1"></div>
+                                    <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-8 h-8 rounded-full bg-purple-900 border border-purple-600 z-10">☠</div>
+                                    <div class="md:w-5/12 glass-card p-6 rounded-xl border-r-4 border-purple-600 hover:border-purple-400 transition-colors order-2">
+                                        <h3 class="font-metal text-2xl text-purple-400">The Final Chapter</h3>
+                                        <span class="text-xs font-bold text-purple-800 block mb-2">2023 - 2026</span>
+                                        <p class="text-sm text-gray-400 font-sans-serif">Survival RPG tergelap. Dungeon paling mematikan. Ini adalah akhir perjalanan Curse.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- HALL OF FAME -->
+                        <h2 class="font-metal text-4xl text-center text-gold mb-10 border-t border-gray-800 pt-10">Hall of Fame</h2>
+                        
+                        <!-- Owner -->
+                        <div class="flex justify-center mb-8">
+                            <div class="glass-card p-6 text-center border-yellow-600 border w-full max-w-sm bg-gradient-to-b from-yellow-900/20 to-black">
+                                <div class="text-4xl mb-2">👑</div>
+                                <h3 class="font-metal text-2xl text-yellow-500">Mont</h3>
+                                <p class="text-xs uppercase tracking-widest text-gray-500">The Owner & Founder</p>
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                            <!-- Admins -->
+                            <div class="glass-card p-6 text-center border-red-900/50 hover:bg-red-900/10 transition">
+                                <div class="text-2xl mb-2">🛡️</div>
+                                <h3 class="font-gothic text-xl text-red-400 mb-2">Administrators</h3>
+                                <p class="text-sm text-gray-300">Xeons • Rama • Sanopalz</p>
+                            </div>
+                            <!-- Donatur God -->
+                            <div class="glass-card p-6 text-center border-green-900/50 hover:bg-green-900/10 transition">
+                                <div class="text-2xl mb-2">💸</div>
+                                <h3 class="font-gothic text-xl text-green-400 mb-2">Donatur God</h3>
+                                <p class="text-sm text-gray-300 font-bold">Ahmad</p>
+                            </div>
+                            <!-- Tech Support -->
+                            <div class="glass-card p-6 text-center border-blue-900/50 hover:bg-blue-900/10 transition">
+                                <div class="text-2xl mb-2">🔧</div>
+                                <h3 class="font-gothic text-xl text-blue-400 mb-2">Tech Support</h3>
+                                <p class="text-sm text-gray-300">Epan</p>
+                            </div>
+                            <!-- Animator -->
+                            <div class="glass-card p-6 text-center border-pink-900/50 hover:bg-pink-900/10 transition">
+                                <div class="text-2xl mb-2">🎨</div>
+                                <h3 class="font-gothic text-xl text-pink-400 mb-2">Animator</h3>
+                                <p class="text-sm text-gray-300">Rossy</p>
+                            </div>
+                            <!-- Streamers -->
+                            <div class="glass-card p-6 text-center border-purple-900/50 hover:bg-purple-900/10 transition md:col-span-2">
+                                <div class="text-2xl mb-2">📡</div>
+                                <h3 class="font-gothic text-xl text-purple-400 mb-2">Streamers</h3>
+                                <div class="flex flex-wrap justify-center gap-3 text-sm text-gray-300">
+                                    <span>Zuanmc</span> <span>•</span> 
+                                    <span>Inderaa</span> <span>•</span> 
+                                    <span>Shade</span> <span>•</span> 
+                                    <span>Ajeul</span> <span>•</span> 
+                                    <span>Latif</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
+            <!-- ====== 2. MAIN VIEW (CENTER) ====== -->
             <div id="view-main" class="page-view view-main-active">
                 
-                <!-- Section: Home -->
-                <section id="home" class="min-h-screen flex items-center justify-center px-4 relative">
+                <section id="home" class="min-h-screen flex items-center justify-center px-4 relative pt-20">
                     <div class="max-w-6xl w-full grid md:grid-cols-2 gap-16 items-center">
                         <div class="text-left space-y-8 reveal active">
-                            <h2 class="font-metal text-5xl md:text-7xl text-white leading-[1.1]">
-                                The <span class="text-gold block mt-2 text-6xl md:text-8xl">Cursed Bane</span>
+                            <h2 class="font-metal text-5xl md:text-6xl text-white leading-[1.1]">
+                                The <span class="text-gold block mt-2">Cursed Bane</span>
                             </h2>
                             <p class="font-sans-serif text-gray-400 leading-7 text-lg border-l-2 border-red-900 pl-4">
                                 Bergabunglah dalam petualangan Roleplay Hardcore Minecraft Indonesia yang paling imersif. 
-                                <br><span class="text-red-500 font-bold mt-2 block">WARNING: DEATH IS PERMANENT</span>
+                                <br><span class="text-red-500 font-bold mt-2 block tracking-wide">WARNING: DEATH IS PERMANENT</span>
                             </p>
                             
-                            <div class="flex flex-col sm:flex-row gap-4 pt-4 transition-all duration-500">
-                                <button id="btn-copy-ip" onclick="rejectIPCopy()" class="cursed-btn py-3 px-8 text-sm flex items-center justify-center gap-3">
-                                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#0f0]"></span>
-                                    <span>Copy IP</span>
+                            <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                                <button onclick="rejectIPCopy()" class="cursed-btn text-sm py-3 px-6 flex items-center justify-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Copy IP
                                 </button>
-                                <a id="btn-discord" href="https://dc.gg/curseodyssey" target="_blank" class="px-8 py-3 border border-indigo-900/50 bg-indigo-950/20 text-indigo-300 hover:bg-indigo-900/40 hover:text-white transition-all uppercase tracking-wider font-gothic text-sm flex items-center justify-center">
+                                <a href="https://dc.gg/curseodyssey" target="_blank" class="px-8 py-3 border border-indigo-900 text-indigo-300 hover:bg-indigo-900/40 text-center font-gothic text-sm flex items-center justify-center cursor-pointer">
                                     Join Discord
                                 </a>
                             </div>
                         </div>
-                        <div class="relative hidden md:block perspective-1000">
-                            <div class="glass-card p-8 transform rotate-y-12 rotate-x-6 hover:rotate-0 transition-all duration-700 reveal delay-200">
-                                <h3 class="font-gothic text-2xl text-red-600 mb-6 border-b border-gray-700 pb-2 flex justify-between items-center">
-                                    Latest Chronicles
-                                </h3>
+                        
+                        <div class="relative hidden md:block">
+                            <!-- Tilt Card -->
+                            <div class="glass-card tilt-card p-8 reveal delay-200 border-l-4 border-red-800">
+                                <h3 class="font-gothic text-2xl text-red-500 mb-6 border-b border-gray-700 pb-2">Latest News</h3>
                                 <ul class="space-y-6 font-sans-serif text-sm text-gray-300">
                                     <li class="flex justify-between items-center">
                                         <span>Season 1: The Awakening</span>
-                                        <span class="text-xs text-gray-500 border border-gray-800 px-2 py-1 rounded">2d ago</span>
+                                        <span class="text-xs text-gray-500 border border-gray-700 px-2 py-1 rounded">2d ago</span>
                                     </li>
                                     <li class="flex justify-between items-center text-yellow-500">
                                         <span>Store Grand Opening</span>
@@ -364,387 +477,228 @@
                     </div>
                 </section>
 
-                <!-- Section: Information -->
-                <section id="information" class="py-32 px-4 bg-gradient-to-b from-transparent via-black to-transparent">
+                <section id="information" class="py-32 px-4">
                     <div class="max-w-6xl mx-auto">
                         <div class="text-center mb-20 reveal">
-                            <h2 class="font-metal text-4xl md:text-5xl text-gray-200 mb-4">Features</h2>
-                            <div class="w-16 h-1 bg-red-900 mx-auto rounded-full"></div>
+                            <h2 class="font-metal text-4xl text-gray-200 mb-4">Features</h2>
+                            <div class="w-16 h-1 bg-red-800 mx-auto rounded-full"></div>
                         </div>
                         <div class="grid md:grid-cols-3 gap-8">
-                            <div class="glass-card p-10 rounded-xl relative overflow-hidden group reveal delay-100">
-                                <div class="text-5xl mb-6">💀</div>
-                                <h3 class="font-gothic text-2xl text-white mb-3 group-hover:text-red-500 transition-colors">Hardcore RP</h3>
+                            <div class="glass-card tilt-card p-8 rounded-xl reveal delay-100 border-t border-red-900/30">
+                                <div class="text-4xl mb-6">💀</div>
+                                <h3 class="font-gothic text-xl text-white mb-3 text-red-500">Hardcore RP</h3>
                                 <p class="font-sans-serif text-sm text-gray-400">Setiap nyawa adalah taruhan. Kematian karakter berarti akhir dari cerita.</p>
                             </div>
-                            <div class="glass-card p-10 rounded-xl relative overflow-hidden group reveal delay-200">
-                                <div class="text-5xl mb-6">💰</div>
-                                <h3 class="font-gothic text-2xl text-white mb-3 group-hover:text-yellow-500 transition-colors">Economy</h3>
+                            <div class="glass-card tilt-card p-8 rounded-xl reveal delay-200 border-t border-yellow-900/30">
+                                <div class="text-4xl mb-6">💰</div>
+                                <h3 class="font-gothic text-xl text-white mb-3 text-yellow-500">Economy</h3>
                                 <p class="font-sans-serif text-sm text-gray-400">Pasar bebas yang kejam. Monopoli sumber daya atau jadilah pedagang pasar gelap.</p>
                             </div>
-                            <div class="glass-card p-10 rounded-xl relative overflow-hidden group reveal delay-300">
-                                <div class="text-5xl mb-6">⚔️</div>
-                                <h3 class="font-gothic text-2xl text-white mb-3 group-hover:text-purple-500 transition-colors">Artifacts</h3>
+                            <div class="glass-card tilt-card p-8 rounded-xl reveal delay-300 border-t border-purple-900/30">
+                                <div class="text-4xl mb-6">⚔️</div>
+                                <h3 class="font-gothic text-xl text-white mb-3 text-purple-500">Artifacts</h3>
                                 <p class="font-sans-serif text-sm text-gray-400">Senjata dengan jiwa iblis. Memberikan kekuatan namun menggerogoti kewarasan.</p>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <footer class="bg-black py-12 border-t border-gray-900 text-center font-sans-serif">
-                    <p class="text-gray-400 text-sm">&copy; 2026 Curse Odyssey Indonesia.</p>
+                <footer class="bg-black/90 py-12 border-t border-gray-900 text-center font-sans-serif">
+                    <p class="text-gray-500 text-sm">&copy; 2026 Curse Odyssey Indonesia.</p>
                 </footer>
             </div>
 
 
-            <!-- ====== PAGE 2: STORE VIEW (Slide in from Right) ====== -->
+            <!-- ====== 3. STORE VIEW (RIGHT) ====== -->
             <div id="view-store" class="page-view view-store-hidden">
-                <section class="min-h-screen px-4 pb-20 relative">
-                    <!-- Background Decoration -->
-                    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 z-0"></div>
-                    
-                    <div class="max-w-6xl mx-auto relative z-10 pt-10">
-                        
-                        <!-- Back Button -->
-                        <button onclick="showMainPage()" class="mb-8 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group">
-                            <span class="group-hover:-translate-x-1 transition-transform">←</span> Back to Home
+                <section class="min-h-screen px-4 pb-20 relative pt-10">
+                    <div class="max-w-6xl mx-auto relative z-10">
+                        <button onclick="showPage('main')" class="mb-8 flex items-center gap-2 text-gray-400 hover:text-white transition-colors bg-white/5 px-4 py-2 rounded">
+                            <span>←</span> Back to Home
                         </button>
 
                         <div class="text-center mb-16">
                             <span class="text-yellow-600 font-gothic tracking-widest text-sm uppercase mb-2 block">Official Server Store</span>
-                            <h2 class="font-metal text-5xl md:text-6xl text-gold mb-4 drop-shadow-lg">Treasury & Ranks</h2>
+                            <h2 class="font-metal text-5xl text-gold mb-4">Treasury & Ranks</h2>
                         </div>
 
                         <!-- 1. RANK SHOP -->
-                        <div class="grid lg:grid-cols-2 gap-8 mb-16 max-w-5xl mx-auto items-stretch">
-                            <!-- VIP Rank -->
-                            <div class="glass-card p-8 rounded-2xl flex flex-col h-full border-t-4 border-gray-600">
+                        <div class="grid lg:grid-cols-2 gap-8 mb-16 max-w-5xl mx-auto">
+                            <!-- VIP -->
+                            <div class="glass-card tilt-card p-8 rounded-2xl border-t-4 border-gray-600">
                                 <div class="flex justify-between items-start mb-6">
-                                    <div>
-                                        <h4 class="font-metal text-4xl text-gray-200">VIP</h4>
-                                        <p class="text-xs text-gray-500 mt-1 uppercase tracking-wider">Starter Privilege</p>
-                                    </div>
-                                    <span class="bg-gray-800/50 border border-gray-600 text-white px-4 py-2 text-sm font-bold rounded">15K IDR</span>
+                                    <h4 class="font-metal text-3xl text-gray-200">VIP</h4>
+                                    <span class="bg-gray-800 border border-gray-600 text-white px-3 py-1 text-sm font-bold rounded">15K IDR</span>
                                 </div>
-                                <ul class="font-sans-serif text-gray-400 space-y-4 mb-8 flex-grow text-sm">
-                                    <li class="flex items-center gap-3"><span class="text-green-500">✓</span> <span>Akses spoiler senjata</span></li>
-                                    <li class="flex items-center gap-3"><span class="text-green-500">✓</span> <span>Bonus 5.000 Money/minggu</span></li>
+                                <ul class="font-sans-serif text-gray-400 space-y-3 mb-8 text-sm">
+                                    <li>✓ Akses spoiler senjata</li>
+                                    <li>✓ Bonus 5.000 Money/minggu</li>
                                 </ul>
-                                <button onclick="buyItem('VIP Rank')" class="store-btn w-full mt-auto bg-gray-900 hover:bg-gray-800">Purchase Ticket</button>
+                                <button onclick="buyItem('VIP Rank')" class="store-btn w-full bg-gray-900">Purchase Ticket</button>
                             </div>
 
-                            <!-- PREMIUM Rank -->
-                            <div class="glass-card rank-premium p-10 rounded-2xl flex flex-col transform lg:scale-105 shadow-[0_0_50px_rgba(0,0,0,0.5)] z-10">
-                                <div class="absolute top-0 right-0 bg-gradient-to-l from-red-800 to-transparent text-white text-xs font-bold px-4 py-1 rounded-bl-xl">POPULAR</div>
+                            <!-- PREMIUM -->
+                            <div class="glass-card tilt-card rank-premium p-8 rounded-2xl transform lg:scale-105 z-10">
                                 <div class="flex justify-between items-start mb-6">
-                                    <div>
-                                        <h4 class="font-metal text-5xl text-gold drop-shadow-md">PREMIUM</h4>
-                                        <p class="text-xs text-yellow-600 mt-1 uppercase tracking-wider">Ultimate Authority</p>
-                                    </div>
-                                    <span class="bg-gradient-to-r from-red-900 to-red-800 text-white px-4 py-2 text-lg font-bold rounded shadow-lg border border-red-600">25K IDR</span>
+                                    <h4 class="font-metal text-4xl text-gold">PREMIUM</h4>
+                                    <span class="bg-red-900 border border-red-600 text-white px-3 py-1 text-sm font-bold rounded">25K IDR</span>
                                 </div>
-                                <ul class="font-sans-serif text-gray-300 space-y-4 mb-10 flex-grow text-sm">
-                                    <li class="flex items-center gap-3"><span class="text-yellow-500 text-lg">★</span> <span class="text-white font-bold">Semua Keuntungan VIP</span></li>
-                                    <li class="flex items-center gap-3"><span class="text-green-500">✓</span> <span>Request Referensi Senjata Custom</span></li>
-                                    <li class="flex items-center gap-3"><span class="text-green-500">✓</span> <span>Bonus 10.000 Money/minggu</span></li>
+                                <ul class="font-sans-serif text-gray-300 space-y-3 mb-8 text-sm">
+                                    <li class="text-yellow-400">★ Semua Keuntungan VIP</li>
+                                    <li>✓ Request Referensi Senjata Custom</li>
+                                    <li>✓ Bonus 10.000 Money/minggu</li>
                                 </ul>
-                                <button onclick="buyItem('Premium Rank')" class="store-btn w-full mt-auto border-yellow-600/50 bg-red-950/30 text-yellow-100 hover:bg-red-900 hover:border-yellow-500">Purchase Ticket</button>
+                                <button onclick="buyItem('Premium Rank')" class="store-btn w-full border-yellow-600 bg-red-900/50">Purchase Ticket</button>
                             </div>
                         </div>
 
-                        <!-- 2. FUTURE RANKS (Ongoing/Coming Soon) -->
+                        <!-- 2. FUTURE RANKS -->
                         <div class="grid md:grid-cols-2 gap-6 mb-20 max-w-4xl mx-auto">
-                            <!-- Cursed+ -->
-                            <div class="glass-card p-6 rounded-lg border-l-4 border-purple-800 flex items-center justify-between opacity-80 hover:opacity-100 transition-opacity">
+                            <div class="glass-card p-6 rounded-lg border-l-4 border-purple-800 flex justify-between items-center opacity-75">
                                 <div>
-                                    <h5 class="font-metal text-2xl text-purple-400">CURSED+</h5>
-                                    <p class="text-xs text-gray-400 mt-1">Status: <span class="text-yellow-500 font-bold animate-pulse">ONGOING</span></p>
-                                    <p class="text-xs text-gray-500 mt-2">Rank eksklusif sedang dalam tahap finalisasi.</p>
+                                    <h5 class="font-metal text-xl text-purple-400">CURSED+</h5>
+                                    <p class="text-xs text-gray-400 mt-1 text-yellow-500">ONGOING</p>
                                 </div>
-                                <button class="px-4 py-2 border border-gray-600 text-gray-500 text-xs cursor-not-allowed uppercase" disabled>Locked</button>
+                                <span class="text-2xl">🔒</span>
                             </div>
-                            <!-- Cursed++ -->
-                            <div class="glass-card p-6 rounded-lg border-l-4 border-gray-700 flex items-center justify-between opacity-60">
+                            <div class="glass-card p-6 rounded-lg border-l-4 border-gray-700 flex justify-between items-center opacity-50">
                                 <div>
-                                    <h5 class="font-metal text-2xl text-gray-500">CURSED++</h5>
-                                    <p class="text-xs text-gray-400 mt-1">Status: <span class="text-gray-500 font-bold">COMING SOON</span></p>
-                                    <p class="text-xs text-gray-500 mt-2">Tingkatan tertinggi dari kutukan. Segera hadir.</p>
+                                    <h5 class="font-metal text-xl text-gray-500">CURSED++</h5>
+                                    <p class="text-xs text-gray-400 mt-1">COMING SOON</p>
                                 </div>
-                                <button class="px-4 py-2 border border-gray-700 text-gray-600 text-xs cursor-not-allowed uppercase" disabled>Locked</button>
+                                <span class="text-2xl">🔒</span>
                             </div>
                         </div>
 
-                        <!-- 3. MYSTICAL KEYS & BOOSTER (NEW SECTION) -->
+                        <!-- 3. MYSTICAL KEYS -->
                         <div class="mb-16">
                             <h3 class="font-gothic text-2xl text-gray-300 mb-8 border-l-4 border-blue-600 pl-4">Mystical Keys & Boosters</h3>
                             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                
-                                <!-- Key Sigma -->
-                                <div class="glass-card p-6 rounded-xl relative group">
-                                    <div class="absolute top-2 right-2 text-2xl opacity-50 group-hover:opacity-100 transition-opacity">🗿</div>
-                                    <h4 class="font-metal text-xl text-gray-200 mb-2">Key Sigma</h4>
-                                    <p class="text-xs text-gray-400 mb-4 h-10">Mulai dominasimu dengan item starter pack solid. Low cost, high value.</p>
-                                    <div class="mt-auto">
-                                        <div class="text-sm font-bold text-blue-300 mb-3">3K IDR / IC</div>
-                                        <button onclick="buyItem('Key Sigma')" class="store-btn text-xs w-full py-2 border-blue-900 hover:bg-blue-900/40">Purchase</button>
-                                    </div>
+                                <!-- Sigma -->
+                                <div class="glass-card tilt-card p-6 rounded-xl">
+                                    <div class="flex justify-between mb-4"><span class="text-2xl">🗿</span></div>
+                                    <h4 class="font-metal text-lg text-gray-200">Key Sigma</h4>
+                                    <p class="text-xs text-gray-400 mb-4 h-8">Item starter pack solid.</p>
+                                    <div class="text-sm font-bold text-blue-300 mb-2">3K IDR / IC</div>
+                                    <button onclick="buyItem('Key Sigma')" class="store-btn text-xs w-full border-blue-900">Purchase</button>
                                 </div>
-
-                                <!-- Key Mewing -->
-                                <div class="glass-card p-6 rounded-xl relative group border border-fuchsia-900/50 shadow-[0_0_15px_rgba(255,0,255,0.1)]">
-                                    <div class="absolute top-2 right-2 text-2xl opacity-50 group-hover:opacity-100 transition-opacity">🤫</div>
-                                    <div class="absolute top-2 left-2 text-[10px] font-bold bg-fuchsia-900 text-fuchsia-200 px-2 py-0.5 rounded border border-fuchsia-500 animate-pulse">MYTHIC</div>
-                                    <h4 class="font-metal text-xl text-fuchsia-400 mb-2 mt-4">Key Mewing</h4>
-                                    <p class="text-xs text-gray-400 mb-4 h-10">Kunci mistis dengan energi purba. Berisi resource langka tingkat tinggi.</p>
-                                    <div class="mt-auto">
-                                        <div class="text-sm font-bold text-fuchsia-300 mb-3">10K IDR / IC</div>
-                                        <button onclick="buyItem('Key Mewing')" class="store-btn text-xs w-full py-2 border-fuchsia-600 hover:bg-fuchsia-900/40">Purchase</button>
-                                    </div>
+                                <!-- Mewing -->
+                                <div class="glass-card tilt-card p-6 rounded-xl border border-fuchsia-900">
+                                    <div class="flex justify-between mb-4"><span class="text-2xl">🤫</span> <span class="text-[10px] bg-fuchsia-900 px-1 rounded h-fit">MYTHIC</span></div>
+                                    <h4 class="font-metal text-lg text-fuchsia-400">Key Mewing</h4>
+                                    <p class="text-xs text-gray-400 mb-4 h-8">Resource langka tingkat tinggi.</p>
+                                    <div class="text-sm font-bold text-fuchsia-300 mb-2">10K IDR / IC</div>
+                                    <button onclick="buyItem('Key Mewing')" class="store-btn text-xs w-full border-fuchsia-600">Purchase</button>
                                 </div>
-
-                                <!-- Key Legends -->
-                                <div class="glass-card p-6 rounded-xl relative group border border-yellow-900/30">
-                                    <div class="absolute top-2 right-2 text-2xl opacity-50 group-hover:opacity-100 transition-opacity">🏆</div>
-                                    <div class="absolute -top-3 -right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded transform rotate-12 shadow-lg z-20">SALE!</div>
-                                    <h4 class="font-metal text-xl text-yellow-500 mb-2">Key Legends</h4>
-                                    <p class="text-xs text-gray-400 mb-4 h-10">Hanya untuk para legenda. Kesempatan mendapatkan senjata Tier-2 & Armor.</p>
-                                    <div class="mt-auto">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <span class="text-xs text-gray-500 line-through">10K</span>
-                                            <span class="text-sm font-bold text-yellow-400">5K IDR / IC</span>
-                                        </div>
-                                        <button onclick="buyItem('Key Legends')" class="store-btn text-xs w-full py-2 border-yellow-700 hover:bg-yellow-900/40">Purchase</button>
-                                    </div>
+                                <!-- Legends -->
+                                <div class="glass-card tilt-card p-6 rounded-xl border border-yellow-900">
+                                    <div class="flex justify-between mb-4"><span class="text-2xl">🏆</span> <span class="text-[10px] bg-red-600 px-1 rounded h-fit">SALE</span></div>
+                                    <h4 class="font-metal text-lg text-yellow-500">Key Legends</h4>
+                                    <p class="text-xs text-gray-400 mb-4 h-8">Senjata Tier-2 & Armor.</p>
+                                    <div class="text-sm font-bold text-yellow-400 mb-2"><span class="line-through text-gray-500 mr-1">10K</span> 5K IDR / IC</div>
+                                    <button onclick="buyItem('Key Legends')" class="store-btn text-xs w-full border-yellow-700">Purchase</button>
                                 </div>
-
-                                <!-- Key Cursed -->
-                                <div class="glass-card p-6 rounded-xl relative group border border-red-900/50 shadow-[0_0_15px_rgba(138,11,11,0.1)]">
-                                    <div class="absolute top-2 right-2 text-2xl opacity-50 group-hover:opacity-100 transition-opacity">☠️</div>
-                                    <h4 class="font-metal text-xl text-red-600 mb-2">Key Cursed</h4>
-                                    <p class="text-xs text-gray-400 mb-4 h-10">Kunci terlarang dari Abyss. Berisi Artifact Tier-1 & Item Endgame mematikan.</p>
-                                    <div class="mt-auto">
-                                        <div class="text-sm font-bold text-red-500 mb-3">20K IDR / IC</div>
-                                        <button onclick="buyItem('Key Cursed')" class="store-btn text-xs w-full py-2 border-red-600 bg-red-950/20 hover:bg-red-900/60">Purchase</button>
-                                    </div>
+                                <!-- Cursed -->
+                                <div class="glass-card tilt-card p-6 rounded-xl border border-red-900">
+                                    <div class="flex justify-between mb-4"><span class="text-2xl">☠️</span></div>
+                                    <h4 class="font-metal text-lg text-red-600">Key Cursed</h4>
+                                    <p class="text-xs text-gray-400 mb-4 h-8">Artifact Tier-1 & Item Endgame.</p>
+                                    <div class="text-sm font-bold text-red-500 mb-2">20K IDR / IC</div>
+                                    <button onclick="buyItem('Key Cursed')" class="store-btn text-xs w-full border-red-600">Purchase</button>
                                 </div>
                             </div>
-
-                            <!-- SPECIAL BOOSTER (Wide Card) -->
-                            <div class="mt-6 glass-card p-6 rounded-xl flex flex-col md:flex-row items-center justify-between gap-6 border-l-4 border-cyan-500">
+                            <!-- Booster -->
+                            <div class="mt-6 glass-card tilt-card p-4 rounded-xl flex items-center justify-between border-l-4 border-cyan-500">
                                 <div class="flex items-center gap-4">
-                                    <div class="text-4xl">🦅</div>
+                                    <span class="text-3xl">🦅</span>
                                     <div>
-                                        <h4 class="font-metal text-2xl text-cyan-400">Flight Booster</h4>
-                                        <p class="text-sm text-gray-300">Akses command <code class="bg-black px-1 rounded text-cyan-500">/fly</code> selama 10 hari.</p>
-                                        <p class="text-xs text-gray-500 mt-1">Jelajahi map tanpa batas dan bangun markas di langit.</p>
+                                        <h4 class="font-metal text-lg text-cyan-400">Flight Booster</h4>
+                                        <p class="text-xs text-gray-400">Akses /fly 10 hari.</p>
                                     </div>
                                 </div>
-                                <div class="text-center md:text-right min-w-[150px]">
-                                    <div class="text-lg font-bold text-cyan-300 mb-2">50K IDR / IC</div>
-                                    <button onclick="buyItem('Flight Booster 10 Days')" class="store-btn w-full py-2 border-cyan-700 hover:bg-cyan-900/40 text-cyan-100">Get Wings</button>
+                                <div class="text-right">
+                                    <div class="text-sm font-bold text-cyan-300 mb-1">50K IDR / IC</div>
+                                    <button onclick="buyItem('Flight Booster')" class="store-btn text-xs border-cyan-700">Get Wings</button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 4. CUSTOM SERVICES (NEW) -->
+                        <!-- 4. CUSTOM SERVICES -->
                         <div class="mb-16">
-                            <h3 class="font-gothic text-2xl text-gray-300 mb-8 border-l-4 border-emerald-600 pl-4">Custom Services & Commissions</h3>
-                            
+                            <h3 class="font-gothic text-2xl text-gray-300 mb-8 border-l-4 border-emerald-600 pl-4">Custom Services</h3>
                             <div class="grid md:grid-cols-3 gap-6">
-                                <!-- Custom Skin -->
-                                <div class="glass-card p-6 rounded-xl relative group border-emerald-900/30">
-                                    <div class="absolute top-2 right-2 text-2xl opacity-50 group-hover:opacity-100 transition-opacity">🎨</div>
-                                    <h4 class="font-metal text-xl text-emerald-400 mb-2">Custom Skin</h4>
-                                    <p class="text-xs text-gray-400 mb-4">Tampil beda dengan skin original buatan kami. Detail tinggi & sesuai request.</p>
-                                    <div class="mt-auto">
-                                        <div class="text-sm font-bold text-emerald-300 mb-3">5K IDR</div>
-                                        <button onclick="buyItem('Jasa Custom Skin')" class="store-btn text-xs w-full py-2 border-emerald-700 hover:bg-emerald-900/40">Request</button>
-                                    </div>
+                                <div class="glass-card tilt-card p-6 rounded-xl border-emerald-900/30">
+                                    <div class="text-3xl mb-2">🎨</div>
+                                    <h4 class="font-metal text-lg text-emerald-400">Custom Skin</h4>
+                                    <div class="text-sm font-bold text-emerald-300 mb-2">5K IDR</div>
+                                    <button onclick="buyItem('Custom Skin')" class="store-btn text-xs w-full border-emerald-700">Request</button>
                                 </div>
-
-                                <!-- Pasang Cosmetics -->
-                                <div class="glass-card p-6 rounded-xl relative group border-pink-900/30">
-                                    <div class="absolute top-2 right-2 text-2xl opacity-50 group-hover:opacity-100 transition-opacity">✨</div>
-                                    <h4 class="font-metal text-xl text-pink-400 mb-2">Pasang Cosmetics</h4>
-                                    <p class="text-xs text-gray-400 mb-4">Instalasi kosmetik custom (topi, sayap, aksesoris) agar karaktermu makin kece.</p>
-                                    <div class="mt-auto">
-                                        <div class="text-sm font-bold text-pink-300 mb-3">Mulai 10K IDR</div>
-                                        <button onclick="buyItem('Jasa Pasang Cosmetics')" class="store-btn text-xs w-full py-2 border-pink-700 hover:bg-pink-900/40">Request</button>
-                                    </div>
+                                <div class="glass-card tilt-card p-6 rounded-xl border-pink-900/30">
+                                    <div class="text-3xl mb-2">✨</div>
+                                    <h4 class="font-metal text-lg text-pink-400">Pasang Cosmetics</h4>
+                                    <div class="text-sm font-bold text-pink-300 mb-2">Mulai 10K IDR</div>
+                                    <button onclick="buyItem('Pasang Cosmetics')" class="store-btn text-xs w-full border-pink-700">Request</button>
                                 </div>
-
-                                <!-- Custom Senjata -->
-                                <div class="glass-card p-6 rounded-xl relative group border-orange-900/30">
-                                    <div class="absolute top-2 right-2 text-2xl opacity-50 group-hover:opacity-100 transition-opacity">⚔️</div>
-                                    <h4 class="font-metal text-xl text-orange-400 mb-2">Custom Senjata</h4>
-                                    <p class="text-xs text-gray-400 mb-4">Desain model senjata 3D eksklusif. Pedang, kapak, atau tombak impianmu.</p>
-                                    <div class="mt-auto">
-                                        <div class="text-sm font-bold text-orange-300 mb-3">Mulai 15K IDR</div>
-                                        <button onclick="buyItem('Jasa Custom Senjata')" class="store-btn text-xs w-full py-2 border-orange-700 hover:bg-orange-900/40">Request</button>
-                                    </div>
+                                <div class="glass-card tilt-card p-6 rounded-xl border-orange-900/30">
+                                    <div class="text-3xl mb-2">⚔️</div>
+                                    <h4 class="font-metal text-lg text-orange-400">Custom Senjata</h4>
+                                    <div class="text-sm font-bold text-orange-300 mb-2">Mulai 15K IDR</div>
+                                    <button onclick="buyItem('Custom Senjata')" class="store-btn text-xs w-full border-orange-700">Request</button>
                                 </div>
                             </div>
-                            
-                            <div class="mt-4 p-4 rounded bg-emerald-950/20 border border-emerald-900/50 text-center">
-                                <p class="text-xs text-emerald-200/80 italic">
-                                    * Harga dapat berubah tergantung tingkat kesulitan (Complexity). Harga final ditetapkan saat deal di tiket Discord.
-                                </p>
-                            </div>
+                            <p class="text-[10px] text-gray-500 mt-2 text-center">* Harga custom dapat berubah sesuai kesulitan.</p>
                         </div>
 
-                        <!-- 5. MONEY SHOP (EXISTING) -->
-                        <div class="bg-black/40 backdrop-blur-md border border-gray-800 rounded-3xl p-8">
-                            <h3 class="font-gothic text-2xl text-gray-300 mb-8 border-l-4 border-yellow-600 pl-4">Currency Exchange</h3>
-                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                                <div class="group text-center">
-                                    <div class="w-16 h-16 mx-auto mb-3 bg-gray-800 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-all border border-gray-700">💰</div>
+                        <!-- 5. CURRENCY -->
+                        <div class="bg-black/40 border border-gray-800 rounded-3xl p-8 mb-12">
+                            <h3 class="font-gothic text-2xl text-gray-300 mb-6 pl-4 border-l-4 border-yellow-600">Money</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                <div class="text-center p-3 border border-gray-700 rounded bg-gray-900/50">
+                                    <div class="text-xl">💰</div>
                                     <div class="font-bold text-gray-200">5k</div>
-                                    <div class="text-xs text-gray-500 mb-2">5.000 IDR</div>
-                                    <button onclick="buyItem('5k Money')" class="store-btn text-xs w-full py-2">Buy</button>
+                                    <div class="text-xs text-gray-500 mb-2">5K IDR</div>
+                                    <button onclick="buyItem('5k Money')" class="store-btn text-xs w-full">Buy</button>
                                 </div>
-                                <div class="group text-center">
-                                    <div class="w-16 h-16 mx-auto mb-3 bg-gray-800 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-all border border-gray-700">💰</div>
+                                <div class="text-center p-3 border border-gray-700 rounded bg-gray-900/50">
+                                    <div class="text-xl">💰</div>
                                     <div class="font-bold text-gray-200">10k</div>
-                                    <div class="text-xs text-gray-500 mb-2">10.000 IDR</div>
-                                    <button onclick="buyItem('10k Money')" class="store-btn text-xs w-full py-2">Buy</button>
+                                    <div class="text-xs text-gray-500 mb-2">10K IDR</div>
+                                    <button onclick="buyItem('10k Money')" class="store-btn text-xs w-full">Buy</button>
                                 </div>
-                                <div class="group text-center">
-                                    <div class="w-16 h-16 mx-auto mb-3 bg-gray-800 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-all border border-gray-700 border-yellow-900 shadow-[0_0_10px_rgba(255,215,0,0.1)]">🌕</div>
+                                <div class="text-center p-3 border border-yellow-900 rounded bg-gray-900/50">
+                                    <div class="text-xl">🌕</div>
                                     <div class="font-bold text-yellow-100">25k</div>
-                                    <div class="text-xs text-gray-500 mb-2">25.000 IDR</div>
-                                    <button onclick="buyItem('25k Money')" class="store-btn text-xs w-full py-2">Buy</button>
+                                    <div class="text-xs text-gray-500 mb-2">25K IDR</div>
+                                    <button onclick="buyItem('25k Money')" class="store-btn text-xs w-full">Buy</button>
                                 </div>
-                                <div class="group text-center">
-                                    <div class="w-16 h-16 mx-auto mb-3 bg-gray-800 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-all border border-gray-700 border-yellow-700 shadow-[0_0_15px_rgba(255,215,0,0.2)]">🏆</div>
+                                <div class="text-center p-3 border border-yellow-700 rounded bg-gray-900/50">
+                                    <div class="text-xl">🏆</div>
                                     <div class="font-bold text-yellow-300">50k</div>
-                                    <div class="text-xs text-gray-500 mb-2">50.000 IDR</div>
-                                    <button onclick="buyItem('50k Money')" class="store-btn text-xs w-full py-2">Buy</button>
+                                    <div class="text-xs text-gray-500 mb-2">50K IDR</div>
+                                    <button onclick="buyItem('50k Money')" class="store-btn text-xs w-full">Buy</button>
                                 </div>
-                                <div class="group text-center">
-                                    <div class="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-yellow-900 to-black rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-all border border-yellow-600 shadow-[0_0_20px_rgba(255,215,0,0.3)]">💎</div>
+                                <div class="text-center p-3 border border-yellow-600 rounded bg-gray-900/50">
+                                    <div class="text-xl">💎</div>
                                     <div class="font-bold text-gold">100k</div>
-                                    <div class="text-xs text-gray-500 mb-2">100.000 IDR</div>
-                                    <button onclick="buyItem('100k Money')" class="store-btn text-xs w-full py-2 border-yellow-600 bg-yellow-900/20">Buy</button>
+                                    <div class="text-xs text-gray-500 mb-2">100K IDR</div>
+                                    <button onclick="buyItem('100k Money')" class="store-btn text-xs w-full bg-yellow-900/20">Buy</button>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mt-12 text-center text-xs text-gray-500">
-                            <span class="text-red-500 font-bold">DISCLAIMER:</span> NO REFUND. Create a ticket in Discord for support.
-                        </div>
                     </div>
                 </section>
             </div>
 
-        </div> <!-- End Pages Wrapper -->
+        </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast">Notification Message</div>
+    <!-- Toast -->
+    <div id="toast">Notification</div>
 
-    <!-- JavaScript -->
+    <!-- Script -->
     <script>
-        // === PAGE SWITCHING LOGIC ===
-        function showStorePage(e) {
-            if(e) e.preventDefault();
-            
-            // Geser Main View ke kiri, Store View masuk dari kanan
-            document.getElementById('view-main').classList.remove('view-main-active');
-            document.getElementById('view-main').classList.add('view-main-hidden');
-            
-            document.getElementById('view-store').classList.remove('view-store-hidden');
-            document.getElementById('view-store').classList.add('view-store-active');
-
-            // Scroll Store ke atas saat dibuka (penting karena scroll ada di dalam page-view)
-            document.getElementById('view-store').scrollTop = 0;
-        }
-
-        function showMainPage(sectionId) {
-            // Geser Store View balik ke kanan, Main View masuk dari kiri
-            document.getElementById('view-store').classList.remove('view-store-active');
-            document.getElementById('view-store').classList.add('view-store-hidden');
-            
-            document.getElementById('view-main').classList.remove('view-main-hidden');
-            document.getElementById('view-main').classList.add('view-main-active');
-
-            // Optional: Scroll ke section tertentu jika ada parameter
-            if (sectionId) {
-                setTimeout(() => {
-                    const el = document.getElementById(sectionId);
-                    if(el) {
-                        // Perlu scroll di dalam #view-main, bukan window
-                        el.scrollIntoView({behavior: 'smooth'});
-                    } else {
-                        // Jika id 'home' atau scroll atas
-                         document.getElementById('view-main').scrollTop = 0;
-                    }
-                }, 800); // Tunggu animasi slide selesai
-            }
-        }
-
-        // === SCROLL REVEAL OBSERVER ===
-        // Perlu memantau scroll di dalam .page-view (view-main), bukan window
-        const mainView = document.getElementById('view-main');
-        const revealElements = document.querySelectorAll('.reveal');
-        
-        // Setup Observer dengan root null (viewport) atau mainView
-        const revealObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) entry.target.classList.add('active');
-            });
-        }, { 
-            root: mainView, // Pantau di dalam main view
-            threshold: 0.15 
-        });
-        
-        revealElements.forEach(el => revealObserver.observe(el));
-
-        // === INTRO LOGIC ===
-        function enterTheAbyss() {
-            const introScreen = document.getElementById('intro-screen');
-            const mainWebsite = document.getElementById('main-website');
-            
-            introScreen.classList.add('zoom-into-abyss');
-            setTimeout(() => {
-                introScreen.style.display = 'none';
-                mainWebsite.style.display = 'block';
-                void mainWebsite.offsetWidth; 
-                mainWebsite.classList.add('show-website');
-                
-                // Re-init particles for correct size
-                resize();
-            }, 1000); 
-        }
-
-        // === UI INTERACTIONS ===
-        function rejectIPCopy() {
-            const btnCopy = document.getElementById("btn-copy-ip");
-            const btnDiscord = document.getElementById("btn-discord");
-            showToast("⚠️ No no, kamu harus whitelist di Discord dulu!");
-            btnCopy.style.transform = "scale(0) rotate(10deg)";
-            btnCopy.style.opacity = "0";
-            setTimeout(() => { btnCopy.style.display = 'none'; }, 500);
-            setTimeout(() => { btnDiscord.classList.add('ring-4', 'ring-indigo-500', 'ring-opacity-50', 'animate-pulse'); }, 600);
-        }
-
-        function buyItem(itemName) {
-            showToast(`💎 Buka Ticket di Discord untuk membeli: ${itemName}`);
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById("toast");
-            toast.innerText = message;
-            toast.className = "show";
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
-        }
-
-        // === CANVAS & EFFECTS ===
-        const spotlight = document.getElementById('spotlight');
-        document.addEventListener('mousemove', (e) => {
-            spotlight.style.setProperty('--x', e.clientX + 'px');
-            spotlight.style.setProperty('--y', e.clientY + 'px');
-        });
-
+        // === CANVAS & PARTICLES ===
         const canvas = document.getElementById('canvas-container');
         const ctx = canvas.getContext('2d');
         let width, height, particles = [];
@@ -764,32 +718,27 @@
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
                 this.size = Math.random() * 2 + 0.5;
-                this.speedY = Math.random() * 0.4 + 0.1;
-                this.speedX = (Math.random() - 0.5) * 0.8;
-                this.opacity = Math.random() * 0.5 + 0.1;
-                this.color = Math.random() > 0.9 ? `rgba(100, 20, 20, ${this.opacity})` : `rgba(150, 150, 160, ${this.opacity})`;
+                this.speedY = Math.random() * 0.3 + 0.1;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.4 + 0.1;
             }
             update() {
                 this.y += this.speedY;
                 this.x += this.speedX;
                 if (this.y > height) { this.y = -10; this.x = Math.random() * width; }
-                if (this.x > width) this.x = 0;
-                if (this.x < 0) this.x = width;
             }
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
+                ctx.fillStyle = `rgba(180, 180, 180, ${this.opacity})`;
                 ctx.fill();
             }
         }
 
         function initParticles() {
             particles = [];
-            const count = width < 768 ? 60 : 150;
-            for (let i = 0; i < count; i++) particles.push(new Particle());
+            for (let i = 0; i < 80; i++) particles.push(new Particle());
         }
-        
         function animate() {
             ctx.clearRect(0, 0, width, height);
             particles.forEach(p => { p.update(); p.draw(); });
@@ -797,6 +746,121 @@
         }
         initParticles();
         animate();
+
+        // === RUNES ===
+        const runeContainer = document.getElementById('runes');
+        const runeChars = "᚛᚜ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛈᛇᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ☠⚔⸸";
+        function createRune() {
+            const rune = document.createElement('div');
+            rune.classList.add('rune');
+            rune.innerText = runeChars.charAt(Math.floor(Math.random() * runeChars.length));
+            rune.style.left = Math.random() * 95 + 'vw';
+            rune.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
+            rune.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            runeContainer.appendChild(rune);
+            setTimeout(() => rune.remove(), 20000);
+        }
+        setInterval(createRune, 1500);
+
+        // === 3D TILT EFFECT ===
+        document.addEventListener('mousemove', (e) => {
+            document.querySelectorAll('.tilt-card').forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (x > 0 && x < rect.width && y > 0 && y < rect.height) {
+                    const cx = rect.width / 2;
+                    const cy = rect.height / 2;
+                    const rx = ((y - cy) / cy) * -8;
+                    const ry = ((x - cx) / cx) * 8;
+                    card.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.02)`;
+                } else {
+                    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+                }
+            });
+        });
+
+        // === PAGE LOGIC ===
+        function enterTheAbyss() {
+            const intro = document.getElementById('intro-screen');
+            intro.classList.add('zoom-into-abyss');
+            setTimeout(() => {
+                intro.style.display = 'none';
+                const main = document.getElementById('main-website');
+                main.style.display = 'block';
+                // Trigger reflow
+                void main.offsetWidth; 
+                main.classList.add('show-website');
+            }, 900);
+        }
+
+        // UNIFIED PAGE SWITCHER
+        function showPage(pageId) {
+            const vMain = document.getElementById('view-main');
+            const vStore = document.getElementById('view-store');
+            const vComm = document.getElementById('view-community');
+
+            // Reset All Classes
+            vMain.className = 'page-view';
+            vStore.className = 'page-view';
+            vComm.className = 'page-view';
+
+            if (pageId === 'store') {
+                vMain.classList.add('view-main-hidden-left'); // Main moves left
+                vStore.classList.add('view-store-active'); // Store enters
+                vComm.classList.add('view-community-hidden'); // Comm stays hidden
+                vStore.scrollTop = 0;
+            } 
+            else if (pageId === 'community') {
+                vMain.classList.add('view-main-hidden-right'); // Main moves right
+                vStore.classList.add('view-store-hidden'); // Store stays hidden
+                vComm.classList.add('view-community-active'); // Comm enters
+                vComm.scrollTop = 0;
+            }
+            else { // 'main' or default
+                vMain.classList.add('view-main-active'); // Main enters
+                vStore.classList.add('view-store-hidden'); // Store exits right
+                vComm.classList.add('view-community-hidden'); // Comm exits left
+                
+                if (pageId !== 'main') {
+                    // Scroll to specific section if ID passed like 'information'
+                    setTimeout(() => {
+                        const el = document.getElementById(pageId);
+                        if(el) el.scrollIntoView({behavior: 'smooth'});
+                    }, 600);
+                } else {
+                    vMain.scrollTop = 0;
+                }
+            }
+        }
+        
+        // Backward compatibility for existing buttons if any
+        function showStorePage(e) { if(e) e.preventDefault(); showPage('store'); }
+        function showMainPage(id) { showPage(id || 'main'); }
+
+
+        function rejectIPCopy() {
+            showToast("⚠️ Whitelist di Discord dulu!");
+        }
+
+        function buyItem(item) {
+            showToast(`💎 Buka Ticket di Discord untuk: ${item}`);
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.className = 'show';
+            setTimeout(() => t.className = '', 3000);
+        }
+
+        // Scroll Reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('active'); });
+        });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
     </script>
 </body>
 </html>
